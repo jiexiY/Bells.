@@ -2,8 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import AuthPage from "./pages/AuthPage";
 import ProjectLeadDashboard from "./pages/ProjectLeadDashboard";
 import TeamLeadDashboard from "./pages/TeamLeadDashboard";
 import TeamMemberDashboard from "./pages/TeamMemberDashboard";
@@ -11,22 +12,61 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function RoleRouter() {
+  const { user, role, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/auth" replace />;
+
+  switch (role) {
+    case "project_lead":
+      return <ProjectLeadDashboard />;
+    case "team_lead":
+      return <TeamLeadDashboard />;
+    case "member":
+      return <TeamMemberDashboard />;
+    default:
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <p className="text-muted-foreground">No role assigned. Please contact an administrator.</p>
+        </div>
+      );
+  }
+}
+
+function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
+  const { user, role, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Loading...</p></div>;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (allowedRoles && role && !allowedRoles.includes(role)) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/project-lead" element={<ProjectLeadDashboard />} />
-          <Route path="/team-lead" element={<TeamLeadDashboard />} />
-          <Route path="/member" element={<TeamMemberDashboard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/" element={<RoleRouter />} />
+            <Route path="/project-lead" element={<ProtectedRoute allowedRoles={["project_lead"]}><ProjectLeadDashboard /></ProtectedRoute>} />
+            <Route path="/team-lead" element={<ProtectedRoute allowedRoles={["team_lead"]}><TeamLeadDashboard /></ProtectedRoute>} />
+            <Route path="/member" element={<ProtectedRoute allowedRoles={["member"]}><TeamMemberDashboard /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

@@ -14,16 +14,169 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          department: Database["public"]["Enums"]["department"] | null
+          email: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"] | null
+          email: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"] | null
+          email?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          department: Database["public"]["Enums"]["department"]
+          description: string | null
+          due_date: string
+          id: string
+          lead_id: string | null
+          lead_name: string | null
+          name: string
+          progress: number
+          status: Database["public"]["Enums"]["project_status"]
+        }
+        Insert: {
+          created_at?: string
+          department: Database["public"]["Enums"]["department"]
+          description?: string | null
+          due_date: string
+          id?: string
+          lead_id?: string | null
+          lead_name?: string | null
+          name: string
+          progress?: number
+          status?: Database["public"]["Enums"]["project_status"]
+        }
+        Update: {
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"]
+          description?: string | null
+          due_date?: string
+          id?: string
+          lead_id?: string | null
+          lead_name?: string | null
+          name?: string
+          progress?: number
+          status?: Database["public"]["Enums"]["project_status"]
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_by: string | null
+          assigned_to: string | null
+          assignee_name: string | null
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          project_id: string
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          assignee_name?: string | null
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          project_id: string
+          status?: Database["public"]["Enums"]["task_status"]
+          title: string
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          assignee_name?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          project_id?: string
+          status?: Database["public"]["Enums"]["task_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          department: Database["public"]["Enums"]["department"] | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          department?: Database["public"]["Enums"]["department"] | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          department?: Database["public"]["Enums"]["department"] | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_department: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["department"]
+      }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "project_lead" | "team_lead" | "member"
+      department: "tech" | "marketing" | "research"
+      project_status: "assigned" | "in_progress" | "complete"
+      task_status: "declined" | "approved" | "unchecked"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +303,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["project_lead", "team_lead", "member"],
+      department: ["tech", "marketing", "research"],
+      project_status: ["assigned", "in_progress", "complete"],
+      task_status: ["declined", "approved", "unchecked"],
+    },
   },
 } as const
