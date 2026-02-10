@@ -33,7 +33,7 @@ export default function HomePage() {
       <div className="max-w-4xl w-full">
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            ProjectHub
+            Bells
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Project management platform with role-based dashboards. Select a view to explore.
