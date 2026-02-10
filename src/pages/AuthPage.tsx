@@ -63,7 +63,7 @@ export default function AuthPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <LayoutDashboard className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">ProjectHub</h1>
+            <h1 className="text-3xl font-bold text-foreground">Bells</h1>
           </div>
           <p className="text-muted-foreground">Sign in to access your dashboard</p>
         </div>

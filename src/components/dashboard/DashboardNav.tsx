@@ -40,7 +40,7 @@ export function DashboardNav() {
           <div className="p-6 border-b border-border">
             <Link to="/" className="flex items-center gap-2">
               <LayoutDashboard className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">ProjectHub</span>
+              <span className="font-bold text-lg">Bells</span>
             </Link>
           </div>
 
