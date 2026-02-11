@@ -14,6 +14,296 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcement_reads: {
+        Row: {
+          announcement_id: string
+          id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          project_id: string | null
+          target_role: Database["public"]["Enums"]["app_role"] | null
+          title: string
+        }
+        Insert: {
+          company_id: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          project_id?: string | null
+          target_role?: Database["public"]["Enums"]["app_role"] | null
+          title: string
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          project_id?: string | null
+          target_role?: Database["public"]["Enums"]["app_role"] | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      company_memberships: {
+        Row: {
+          company_id: string
+          created_at: string
+          department: Database["public"]["Enums"]["department"] | null
+          id: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"] | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"] | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_memberships_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_annotations: {
+        Row: {
+          content: string
+          created_at: string
+          document_id: string
+          highlight_text: string | null
+          id: string
+          page_number: number | null
+          position_x: number | null
+          position_y: number | null
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          document_id: string
+          highlight_text?: string | null
+          id?: string
+          page_number?: number | null
+          position_x?: number | null
+          position_y?: number | null
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          document_id?: string
+          highlight_text?: string | null
+          id?: string
+          page_number?: number | null
+          position_x?: number | null
+          position_y?: number | null
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_annotations_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          project_id: string | null
+          status: string
+          submitted_by: string
+          submitted_by_name: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          project_id?: string | null
+          status?: string
+          submitted_by: string
+          submitted_by_name?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          project_id?: string | null
+          status?: string
+          submitted_by?: string
+          submitted_by_name?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string | null
+          reference_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          reference_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          reference_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
