@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { CompanyProvider } from "@/contexts/CompanyContext";
 import AuthPage from "./pages/AuthPage";
+import CompanyPortal from "./pages/CompanyPortal";
 import ProjectLeadDashboard from "./pages/ProjectLeadDashboard";
 import TeamLeadDashboard from "./pages/TeamLeadDashboard";
 import TeamMemberDashboard from "./pages/TeamMemberDashboard";
@@ -52,20 +54,23 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/" element={<RoleRouter />} />
-            <Route path="/project-lead" element={<ProtectedRoute allowedRoles={["project_lead"]}><ProjectLeadDashboard /></ProtectedRoute>} />
-            <Route path="/team-lead" element={<ProtectedRoute allowedRoles={["team_lead"]}><TeamLeadDashboard /></ProtectedRoute>} />
-            <Route path="/member" element={<ProtectedRoute allowedRoles={["member"]}><TeamMemberDashboard /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <CompanyProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/companies" element={<ProtectedRoute><CompanyPortal /></ProtectedRoute>} />
+              <Route path="/" element={<RoleRouter />} />
+              <Route path="/project-lead" element={<ProtectedRoute allowedRoles={["project_lead"]}><ProjectLeadDashboard /></ProtectedRoute>} />
+              <Route path="/team-lead" element={<ProtectedRoute allowedRoles={["team_lead"]}><TeamLeadDashboard /></ProtectedRoute>} />
+              <Route path="/member" element={<ProtectedRoute allowedRoles={["member"]}><TeamMemberDashboard /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </CompanyProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
