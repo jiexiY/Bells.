@@ -260,6 +260,50 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          company_id: string
+          created_at: string
+          department: Database["public"]["Enums"]["department"] | null
+          email: string
+          id: string
+          invited_by: string
+          responded_at: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"] | null
+          email: string
+          id?: string
+          invited_by: string
+          responded_at?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"] | null
+          email?: string
+          id?: string
+          invited_by?: string
+          responded_at?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           company_id: string | null

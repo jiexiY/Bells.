@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FolderOpen, FileCheck, Building2, ChevronDown, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FolderOpen, FileCheck, Building2, ChevronDown, ChevronRight, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { CommunicationPanel } from "./CommunicationPanel";
 import { StoragePanel } from "./StoragePanel";
 import { DocumentSubmissionPanel } from "./DocumentSubmissionPanel";
+import { InviteMemberPanel } from "./InviteMemberPanel";
 
 export function DashboardNav() {
   const location = useLocation();
@@ -21,7 +22,7 @@ export function DashboardNav() {
   const [commOpen, setCommOpen] = useState(false);
   const [storageOpen, setStorageOpen] = useState(false);
   const [docsOpen, setDocsOpen] = useState(false);
-
+  const [inviteOpen, setInviteOpen] = useState(false);
   const activeCompany = companies.find(c => c.id === activeCompanyId);
 
   const navigation = [
@@ -129,6 +130,21 @@ export function DashboardNav() {
                   </CollapsibleTrigger>
                   <CollapsibleContent className="px-1 pb-3">
                     <DocumentSubmissionPanel />
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            )}
+
+            {/* Invite Members */}
+            {activeCompanyId && (activeRole === "project_lead" || activeRole === "team_lead") && (
+              <div className="px-3">
+                <Collapsible open={inviteOpen} onOpenChange={setInviteOpen}>
+                  <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
+                    <span className="flex items-center gap-2"><UserPlus className="h-3.5 w-3.5" /> Invite Members</span>
+                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", inviteOpen && "rotate-180")} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="px-1 pb-3">
+                    <InviteMemberPanel />
                   </CollapsibleContent>
                 </Collapsible>
               </div>
