@@ -39,7 +39,7 @@ export default function AuthPage() {
     setLoading(true);
     try {
       await signIn(loginEmail, loginPassword);
-      navigate("/");
+      navigate("/companies");
     } catch (err: any) {
       toast({ title: "Login failed", description: err.message, variant: "destructive" });
     } finally {

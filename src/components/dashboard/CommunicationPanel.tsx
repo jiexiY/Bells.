@@ -15,8 +15,8 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
 export function CommunicationPanel() {
-  const { activeCompanyId } = useCompany();
-  const { user, role } = useAuth();
+  const { activeCompanyId, activeRole } = useCompany();
+  const { user } = useAuth();
   const { data: announcements = [] } = useAnnouncements(activeCompanyId || undefined);
   const announcementIds = announcements.map(a => a.id);
   const { data: reads = [] } = useAnnouncementReads(announcementIds);
@@ -27,7 +27,7 @@ export function CommunicationPanel() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const isLead = role === "project_lead" || role === "team_lead";
+  const isLead = activeRole === "project_lead" || activeRole === "team_lead";
 
   const myReads = reads.filter(r => r.user_id === user?.id);
   const unreadAnnouncements = announcements.filter(a =>

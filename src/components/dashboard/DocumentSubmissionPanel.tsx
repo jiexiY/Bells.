@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useDocuments, useDocumentAnnotations, useUpdateDocumentStatus, useCreateAnnotation, useUploadDocument } from "@/hooks/useDocuments";
 import { useProjects } from "@/hooks/useProjects";
 import { useCompany } from "@/contexts/CompanyContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,14 +25,14 @@ const statusConfig: Record<string, { label: string; color: string; icon: any }> 
 };
 
 function DocumentDetail({ doc, onClose }: { doc: DocumentRow; onClose: () => void }) {
-  const { role } = useAuth();
+  const { activeRole } = useCompany();
   const { data: annotations = [] } = useDocumentAnnotations(doc.id);
   const updateStatus = useUpdateDocumentStatus();
   const createAnnotation = useCreateAnnotation();
   const [note, setNote] = useState("");
   const [highlightText, setHighlightText] = useState("");
 
-  const isLead = role === "project_lead" || role === "team_lead";
+  const isLead = activeRole === "project_lead" || activeRole === "team_lead";
 
   const handleAddNote = () => {
     if (!note.trim()) return;
