@@ -2,15 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCompanies, useCompanyMemberships, useCreateCompany } from "@/hooks/useCompanies";
 import { useUnreadCountByCompany } from "@/hooks/useNotifications";
+import { useMyInvitations, useRespondInvitation } from "@/hooks/useInvitations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Building2, Plus, ArrowRight } from "lucide-react";
+import { Building2, Plus, ArrowRight, Mail, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function CompanyPortal() {
   const { user } = useAuth();
@@ -19,6 +22,8 @@ export default function CompanyPortal() {
   const { data: memberships = [] } = useCompanyMemberships();
   const unreadCounts = useUnreadCountByCompany();
   const createCompany = useCreateCompany();
+  const { data: pendingInvites = [] } = useMyInvitations();
+  const respondInvite = useRespondInvitation();
   const { setActiveCompanyId } = useCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -97,6 +102,41 @@ export default function CompanyPortal() {
             </Card>
           )}
         </div>
+
+        {/* Pending Invitations */}
+        {pendingInvites.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" /> Pending Invitations
+            </h2>
+            <div className="grid gap-3">
+              {pendingInvites.map(inv => (
+                <Card key={inv.id} className="border-primary/20">
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div>
+                      <p className="font-medium text-foreground text-sm">You've been invited</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        Role: {inv.role.replace("_", " ")}{inv.department ? ` · ${inv.department}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="gap-1"
+                        disabled={respondInvite.isPending}
+                        onClick={() => respondInvite.mutate({ invitation: inv, accept: false }, { onSuccess: () => toast.info("Invitation declined") })}>
+                        <X className="h-3.5 w-3.5" /> Decline
+                      </Button>
+                      <Button size="sm" className="gap-1"
+                        disabled={respondInvite.isPending}
+                        onClick={() => respondInvite.mutate({ invitation: inv, accept: true }, { onSuccess: () => toast.success("Invitation accepted!") })}>
+                        <Check className="h-3.5 w-3.5" /> Accept
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 text-center">
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
