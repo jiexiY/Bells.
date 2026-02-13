@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { CompanyProvider } from "@/contexts/CompanyContext";
+import { CompanyProvider, useCompany } from "@/contexts/CompanyContext";
 import AuthPage from "./pages/AuthPage";
 import CompanyPortal from "./pages/CompanyPortal";
 import ProjectLeadDashboard from "./pages/ProjectLeadDashboard";
@@ -15,7 +15,8 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function RoleRouter() {
-  const { user, role, loading } = useAuth();
+  const { user, loading } = useAuth();
+  const { activeCompanyId, activeRole } = useCompany();
 
   if (loading) {
     return (
@@ -26,8 +27,9 @@ function RoleRouter() {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
+  if (!activeCompanyId) return <Navigate to="/companies" replace />;
 
-  switch (role) {
+  switch (activeRole) {
     case "project_lead":
       return <ProjectLeadDashboard />;
     case "team_lead":
@@ -37,17 +39,18 @@ function RoleRouter() {
     default:
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
-          <p className="text-muted-foreground">No role assigned. Please contact an administrator.</p>
+          <p className="text-muted-foreground">No role assigned for this organization. Please contact an administrator.</p>
         </div>
       );
   }
 }
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
-  const { user, role, loading } = useAuth();
+  const { user, loading } = useAuth();
+  const { activeRole } = useCompany();
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Loading...</p></div>;
   if (!user) return <Navigate to="/auth" replace />;
-  if (allowedRoles && role && !allowedRoles.includes(role)) return <Navigate to="/" replace />;
+  if (allowedRoles && activeRole && !allowedRoles.includes(activeRole)) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 

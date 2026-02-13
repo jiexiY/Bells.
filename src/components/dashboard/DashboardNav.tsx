@@ -14,8 +14,8 @@ import { DocumentSubmissionPanel } from "./DocumentSubmissionPanel";
 export function DashboardNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { role, profileName, signOut } = useAuth();
-  const { activeCompanyId, setActiveCompanyId } = useCompany();
+  const { profileName, signOut } = useAuth();
+  const { activeCompanyId, setActiveCompanyId, activeRole } = useCompany();
   const { data: companies = [] } = useCompanies();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commOpen, setCommOpen] = useState(false);
@@ -25,9 +25,9 @@ export function DashboardNav() {
   const activeCompany = companies.find(c => c.id === activeCompanyId);
 
   const navigation = [
-    role === "project_lead" && { name: "Project Lead", href: "/project-lead", icon: Briefcase },
-    role === "team_lead" && { name: "Team Lead", href: "/team-lead", icon: Users },
-    role === "member" && { name: "My Tasks", href: "/member", icon: ClipboardList },
+    activeRole === "project_lead" && { name: "Project Lead", href: "/project-lead", icon: Briefcase },
+    activeRole === "team_lead" && { name: "Team Lead", href: "/team-lead", icon: Users },
+    activeRole === "member" && { name: "My Tasks", href: "/member", icon: ClipboardList },
   ].filter(Boolean) as { name: string; href: string; icon: any }[];
 
   const handleSignOut = async () => {
@@ -138,7 +138,7 @@ export function DashboardNav() {
           {/* Footer */}
           <div className="p-4 border-t border-border space-y-2">
             {profileName && <p className="text-sm font-medium text-foreground px-3">{profileName}</p>}
-            <p className="text-xs text-muted-foreground capitalize px-3">{role?.replace("_", " ")}</p>
+            <p className="text-xs text-muted-foreground capitalize px-3">{activeRole?.replace("_", " ") || "No role"}</p>
             <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
               Sign Out
