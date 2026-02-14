@@ -51,39 +51,23 @@ export function useCreateCompany() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async ({ name, role, department }: { name: string; role: "project_lead" | "team_lead" | "member"; department?: string }) => {
-      // Insert company without chaining .select() to avoid RLS SELECT restriction
-      const { data: insertData, error } = await supabase
+      const { data: company, error } = await supabase
         .from("companies")
         .insert({ name })
-        .select("id")
+        .select()
         .single();
-      
-      // If select fails due to RLS, try fetching via a workaround
-      let companyId: string;
-      if (error) {
-        // Fallback: insert without select, then query after membership is created
-        const { error: insertError } = await supabase
-          .from("companies")
-          .insert({ name });
-        if (insertError) throw insertError;
-        // We need to find the company - query by name (temporary)
-        // Better approach: add RLS policy
-        throw new Error("Company created but could not retrieve ID. Please refresh.");
-      } else {
-        companyId = insertData.id;
-      }
+      if (error) throw error;
 
-      // Auto-join the company
       const { error: memberError } = await supabase
         .from("company_memberships")
         .insert({
           user_id: user!.id,
-          company_id: companyId,
+          company_id: company.id,
           role,
           department: department as any || null,
         });
       if (memberError) throw memberError;
-      return { id: companyId, name };
+      return company;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["companies"] });
