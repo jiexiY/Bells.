@@ -114,6 +114,7 @@ export default function ProjectLeadDashboard() {
           <ProjectCard
             key={p.id}
             project={toProject(p)}
+            inviteCode={p.invite_code}
             showFeedbackActions={activeTab !== "complete"}
             onFeedback={handleFeedback}
           />
