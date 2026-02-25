@@ -1,22 +1,18 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ProgressBar } from "@/components/dashboard/ProgressBar";
+import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
-import { useTasks, useCreateTask, useUpdateTask } from "@/hooks/useTasks";
+import { useTasks, useUpdateTask } from "@/hooks/useTasks";
 import { useMembers } from "@/hooks/useMembers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
-import { FolderCheck, Clock, CheckCircle2, Users, Plus, ListTodo, Search } from "lucide-react";
+import { FolderCheck, Clock, CheckCircle2, Users, ListTodo, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { TaskStatus } from "@/types/project";
@@ -29,18 +25,14 @@ export default function TeamLeadDashboard() {
   const updateProject = useUpdateProject();
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();
   const { data: members = [] } = useMembers(dept || undefined);
-  const createTask = useCreateTask();
   const updateTask = useUpdateTask();
 
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [newTask, setNewTask] = useState({ title: "", description: "", assignedTo: "", projectId: "", dueDate: "" });
 
   const departmentProjects = projects;
   const departmentTasks = tasks.filter((t) => departmentProjects.some((p) => p.id === t.project_id));
 
-  // Project status counts
   const assignedProjects = departmentProjects.filter((p) => p.status === "assigned");
   const inProgressProjects = departmentProjects.filter((p) => p.status === "in_progress");
   const pendingApprovalProjects = departmentProjects.filter((p) => p.status === "pending_approval");
@@ -77,28 +69,6 @@ export default function TeamLeadDashboard() {
     updateTask.mutate({ id: taskId, status: status as any });
   };
 
-  const handleCreateTask = () => {
-    const member = members.find((m) => m.user_id === newTask.assignedTo);
-    createTask.mutate({
-      title: newTask.title,
-      description: newTask.description,
-      status: "incomplete",
-      project_id: newTask.projectId,
-      assigned_to: newTask.assignedTo,
-      assigned_by: user?.id || null,
-      assignee_name: member?.name || "",
-      due_date: newTask.dueDate,
-    });
-    setNewTask({ title: "", description: "", assignedTo: "", projectId: "", dueDate: "" });
-    setDialogOpen(false);
-  };
-
-  const toProject = (p: typeof projects[0]) => ({
-    id: p.id, name: p.name, description: p.description || "", status: p.status,
-    progress: p.progress, leadId: p.lead_id || "", leadName: p.lead_name || "",
-    department: p.department, createdAt: p.created_at, dueDate: p.due_date,
-  });
-
   if (projectsLoading || tasksLoading) {
     return <DashboardLayout title="Team Lead Dashboard" subtitle="Loading..."><p className="text-muted-foreground">Loading...</p></DashboardLayout>;
   }
@@ -125,6 +95,14 @@ export default function TeamLeadDashboard() {
         <StatsCard title="Team Members" value={members.length} icon={Users} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={CheckCircle2} />
       </div>
+
+      {/* Task Assignment Section */}
+      <TaskAssignmentSection
+        projects={departmentProjects.map(p => ({ id: p.id, name: p.name }))}
+        assignees={members.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
+        title="Assign Sub-Tasks"
+        description="Create and assign tasks to your team members"
+      />
 
       {/* Project Status Tabs */}
       <div className="flex items-center gap-1 border-b border-border mb-6 overflow-x-auto">
@@ -182,47 +160,13 @@ export default function TeamLeadDashboard() {
         )}
       </div>
 
-      {/* Task Management Section */}
+      {/* Task Review Section */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ListTodo className="w-5 h-5 text-primary" />
-            Sub-Task Management
+            Task Review
           </CardTitle>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm"><Plus className="w-4 h-4 mr-1" />Assign Task</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Assign New Task</DialogTitle>
-                <DialogDescription>Create a sub-task and assign it to a team member</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2"><Label>Task Title</Label><Input placeholder="Enter task title" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} /></div>
-                <div className="space-y-2"><Label>Description</Label><Textarea placeholder="Enter task description" value={newTask.description} onChange={(e) => setNewTask({ ...newTask, description: e.target.value })} /></div>
-                <div className="space-y-2">
-                  <Label>Project</Label>
-                  <Select value={newTask.projectId} onValueChange={(v) => setNewTask({ ...newTask, projectId: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select project" /></SelectTrigger>
-                    <SelectContent>{departmentProjects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Assign To</Label>
-                  <Select value={newTask.assignedTo} onValueChange={(v) => setNewTask({ ...newTask, assignedTo: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select team member" /></SelectTrigger>
-                    <SelectContent>{members.map((m) => <SelectItem key={m.user_id} value={m.user_id}>{m.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2"><Label>Due Date</Label><Input type="date" value={newTask.dueDate} onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })} /></div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleCreateTask}>Create Task</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </CardHeader>
         <CardContent>
           <ScrollArea className="max-h-[500px]">
@@ -238,11 +182,11 @@ export default function TeamLeadDashboard() {
                   </div>
                   {(t.status === "pending_approval") && (
                     <div className="flex items-center gap-1 ml-3">
-                      <Button size="sm" variant="outline" className="text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 h-8 px-2"
+                      <Button size="sm" variant="outline" className="text-primary hover:bg-primary/10 h-8 px-2"
                         onClick={() => handleTaskStatusChange(t.id, "completed")}>
                         Approve
                       </Button>
-                      <Button size="sm" variant="outline" className="text-destructive hover:bg-red-50 dark:hover:bg-red-900/20 h-8 px-2"
+                      <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10 h-8 px-2"
                         onClick={() => handleTaskStatusChange(t.id, "need_revision")}>
                         Revise
                       </Button>
@@ -250,7 +194,7 @@ export default function TeamLeadDashboard() {
                   )}
                 </div>
               ))}
-              {departmentTasks.length === 0 && <p className="text-muted-foreground text-center py-8 text-sm">No tasks yet. Assign tasks to your team members.</p>}
+              {departmentTasks.length === 0 && <p className="text-muted-foreground text-center py-8 text-sm">No tasks yet.</p>}
             </div>
           </ScrollArea>
         </CardContent>
