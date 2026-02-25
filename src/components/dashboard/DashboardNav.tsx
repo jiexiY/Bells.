@@ -9,7 +9,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { useCompanies, useCompanyMemberships } from "@/hooks/useCompanies";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { CommunicationPanel } from "./CommunicationPanel";
-import { StorageDocumentsPanel } from "./StorageDocumentsPanel";
+import { DocumentSubmissionPanel } from "./DocumentSubmissionPanel";
 import { InviteMemberPanel } from "./InviteMemberPanel";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
@@ -130,7 +130,7 @@ export function DashboardNav() {
                     <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", storageOpen && "rotate-180")} />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="px-1 pb-3">
-                    <StorageDocumentsPanel />
+                    <DocumentSubmissionPanel />
                   </CollapsibleContent>
                 </Collapsible>
               </div>
