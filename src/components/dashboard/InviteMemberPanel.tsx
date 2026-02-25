@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useCompanyInvitations, useSendInvitation } from "@/hooks/useInvitations";
+import { useCompany } from "@/contexts/CompanyContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,6 +13,8 @@ import { toast } from "sonner";
 export function InviteMemberPanel() {
   const { data: invitations = [] } = useCompanyInvitations();
   const sendInvite = useSendInvitation();
+  const { activeCompanyId } = useCompany();
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"project_lead" | "team_lead" | "member">("member");
   const [department, setDepartment] = useState<string>("");
@@ -18,7 +22,12 @@ export function InviteMemberPanel() {
   const handleSend = () => {
     if (!email.trim()) return;
     sendInvite.mutate(
-      { email, role, department: department as any || undefined },
+      {
+        email,
+        role,
+        department: department as any || undefined,
+        inviterName: user?.user_metadata?.name || user?.email,
+      },
       {
         onSuccess: () => {
           toast.success("Invitation sent!");
