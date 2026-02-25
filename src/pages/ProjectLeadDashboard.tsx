@@ -19,6 +19,7 @@ export default function ProjectLeadDashboard() {
 
   const assignedProjects = projects.filter((p) => p.status === "assigned");
   const inProgressProjects = projects.filter((p) => p.status === "in_progress");
+  const pendingApprovalProjects = projects.filter((p) => p.status === "pending_approval");
   const completeProjects = projects.filter((p) => p.status === "complete");
   const avgProgress = projects.length ? Math.round(projects.reduce((s, p) => s + p.progress, 0) / projects.length) : 0;
   const completionRate = projects.length ? Math.round((completeProjects.length / projects.length) * 100) : 0;
@@ -45,8 +46,8 @@ export default function ProjectLeadDashboard() {
   const tabs = [
     { key: "all", label: "All", list: projects },
     { key: "in_progress", label: "In Progress", list: inProgressProjects },
+    { key: "pending_approval", label: "Pending Approval", list: pendingApprovalProjects },
     { key: "complete", label: "Completed", list: completeProjects },
-    { key: "assigned", label: "Planning", list: assignedProjects },
   ];
 
   const activeList = tabs.find(t => t.key === activeTab)?.list || projects;

@@ -60,6 +60,10 @@ export default function TeamMemberDashboard() {
   const { data: myTasks = [], isLoading: tasksLoading } = useTasks();
   const { data: projects = [] } = useProjects();
 
+  const pendingApprovalTasks = myTasks.filter((t) => {
+    const project = projects.find((p) => p.id === t.project_id);
+    return project?.status === "pending_approval";
+  });
   const uncheckedTasks = myTasks.filter((t) => t.status === "unchecked");
   const approvedTasks = myTasks.filter((t) => t.status === "approved");
   const declinedTasks = myTasks.filter((t) => t.status === "declined");
@@ -92,7 +96,8 @@ export default function TeamMemberDashboard() {
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList className="flex flex-wrap h-auto gap-1">
           <TabsTrigger value="all" className="text-xs sm:text-sm">All Tasks ({myTasks.length})</TabsTrigger>
-          <TabsTrigger value="unchecked" className="text-xs sm:text-sm">Pending ({uncheckedTasks.length})</TabsTrigger>
+          <TabsTrigger value="unchecked" className="text-xs sm:text-sm">In Progress ({uncheckedTasks.length})</TabsTrigger>
+          <TabsTrigger value="pending_approval" className="text-xs sm:text-sm">Pending Approval ({pendingApprovalTasks.length})</TabsTrigger>
           <TabsTrigger value="approved" className="text-xs sm:text-sm">Approved ({approvedTasks.length})</TabsTrigger>
           <TabsTrigger value="declined" className="text-xs sm:text-sm">Declined ({declinedTasks.length})</TabsTrigger>
         </TabsList>
@@ -100,6 +105,7 @@ export default function TeamMemberDashboard() {
         {[
           { value: "all", list: myTasks, emptyIcon: FileText, emptyMsg: "No tasks assigned yet" },
           { value: "unchecked", list: uncheckedTasks, emptyIcon: CheckCircle, emptyMsg: "All tasks have been reviewed" },
+          { value: "pending_approval", list: pendingApprovalTasks, emptyIcon: Clock, emptyMsg: "No tasks pending approval" },
           { value: "approved", list: approvedTasks, emptyIcon: FileText, emptyMsg: "No approved tasks yet" },
           { value: "declined", list: declinedTasks, emptyIcon: CheckCircle, emptyMsg: "No declined tasks - great work!" },
         ].map(({ value, list, emptyIcon, emptyMsg }) => (

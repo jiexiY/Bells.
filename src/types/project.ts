@@ -1,6 +1,6 @@
 // Project Management Types
 
-export type ProjectStatus = "assigned" | "in_progress" | "complete";
+export type ProjectStatus = "assigned" | "in_progress" | "pending_approval" | "complete";
 export type TaskStatus = "declined" | "approved" | "unchecked";
 export type FeedbackType = "declined" | "approved";
 
