@@ -87,8 +87,8 @@ export default function TeamLeadDashboard() {
           <Tabs defaultValue="all" className="space-y-4">
             <TabsList className="flex flex-wrap h-auto gap-1">
               <TabsTrigger value="all" className="text-xs sm:text-sm">All ({departmentProjects.length})</TabsTrigger>
-              <TabsTrigger value="assigned" className="text-xs sm:text-sm">Assigned</TabsTrigger>
               <TabsTrigger value="in_progress" className="text-xs sm:text-sm">In Progress</TabsTrigger>
+              <TabsTrigger value="pending_approval" className="text-xs sm:text-sm">Pending Approval</TabsTrigger>
               <TabsTrigger value="complete" className="text-xs sm:text-sm">Complete</TabsTrigger>
             </TabsList>
             <TabsContent value="all">
@@ -96,7 +96,7 @@ export default function TeamLeadDashboard() {
                 {departmentProjects.map((p) => <ProjectCard key={p.id} project={toProject(p)} />)}
               </div>
             </TabsContent>
-            {(["assigned", "in_progress", "complete"] as const).map((status) => (
+            {(["in_progress", "pending_approval", "complete"] as const).map((status) => (
               <TabsContent key={status} value={status}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {departmentProjects.filter((p) => p.status === status).map((p) => <ProjectCard key={p.id} project={toProject(p)} />)}

@@ -5,7 +5,7 @@ export interface ProjectRow {
   id: string;
   name: string;
   description: string | null;
-  status: "assigned" | "in_progress" | "complete";
+  status: "assigned" | "in_progress" | "pending_approval" | "complete";
   progress: number;
   lead_id: string | null;
   lead_name: string | null;
