@@ -1,17 +1,17 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FolderOpen, FileCheck, Building2, ChevronDown, ChevronRight, UserPlus } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FolderOpen, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
-import { useCompanies } from "@/hooks/useCompanies";
+import { useCompanies, useCompanyMemberships } from "@/hooks/useCompanies";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { CommunicationPanel } from "./CommunicationPanel";
-import { StoragePanel } from "./StoragePanel";
-import { DocumentSubmissionPanel } from "./DocumentSubmissionPanel";
+import { StorageDocumentsPanel } from "./StorageDocumentsPanel";
 import { InviteMemberPanel } from "./InviteMemberPanel";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 export function DashboardNav() {
   const location = useLocation();
@@ -19,12 +19,13 @@ export function DashboardNav() {
   const { profileName, signOut } = useAuth();
   const { activeCompanyId, setActiveCompanyId, activeRole } = useCompany();
   const { data: companies = [] } = useCompanies();
+  const { data: memberships = [] } = useCompanyMemberships();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commOpen, setCommOpen] = useState(false);
   const [storageOpen, setStorageOpen] = useState(false);
-  const [docsOpen, setDocsOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const activeCompany = companies.find(c => c.id === activeCompanyId);
+  const hasMultipleMemberships = memberships.length >= 2;
 
   const navigation = [
     activeRole === "project_lead" && { name: "Project Lead", href: "/project-lead", icon: Briefcase },
@@ -64,11 +65,25 @@ export function DashboardNav() {
               <span className="font-bold text-lg">Bells</span>
             </Link>
             {activeCompany && (
-              <button onClick={handleSwitchCompany} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm">
-                <Building2 className="h-4 w-4 text-primary" />
-                <span className="font-medium truncate flex-1 text-left">{activeCompany.name}</span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={handleSwitchCompany} className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  <span className="font-medium truncate flex-1 text-left">{activeCompany.name}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+                {hasMultipleMemberships && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={handleSwitchCompany}>
+                          <ArrowLeftRight className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Switch organization</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             )}
           </div>
 
@@ -106,7 +121,7 @@ export function DashboardNav() {
               </div>
             )}
 
-            {/* Storage */}
+            {/* Storage & Documents */}
             {activeCompanyId && (
               <div className="px-3">
                 <Collapsible open={storageOpen} onOpenChange={setStorageOpen}>
@@ -115,22 +130,7 @@ export function DashboardNav() {
                     <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", storageOpen && "rotate-180")} />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="px-1 pb-3">
-                    <StoragePanel />
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-            )}
-
-            {/* Document Submission */}
-            {activeCompanyId && (
-              <div className="px-3">
-                <Collapsible open={docsOpen} onOpenChange={setDocsOpen}>
-                  <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
-                    <span className="flex items-center gap-2"><FileCheck className="h-3.5 w-3.5" /> Documents</span>
-                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", docsOpen && "rotate-180")} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-1 pb-3">
-                    <DocumentSubmissionPanel />
+                    <StorageDocumentsPanel />
                   </CollapsibleContent>
                 </Collapsible>
               </div>
@@ -148,6 +148,19 @@ export function DashboardNav() {
                     <InviteMemberPanel />
                   </CollapsibleContent>
                 </Collapsible>
+              </div>
+            )}
+
+            {/* Settings */}
+            {activeCompanyId && (
+              <div className="px-3 py-1">
+                <Link to="/settings" onClick={() => setMobileOpen(false)}
+                  className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    location.pathname === "/settings" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}>
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </Link>
               </div>
             )}
           </div>
