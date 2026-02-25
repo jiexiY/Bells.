@@ -138,21 +138,6 @@ export function DashboardNav() {
               </div>
             )}
 
-            {/* Invite Members */}
-            {activeCompanyId && (activeRole === "project_lead" || activeRole === "team_lead") && (
-              <div className="px-3">
-                <Collapsible open={inviteOpen} onOpenChange={setInviteOpen}>
-                  <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
-                    <span className="flex items-center gap-2"><UserPlus className="h-3.5 w-3.5" /> Invite Members</span>
-                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", inviteOpen && "rotate-180")} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-1 pb-3">
-                    <InviteMemberPanel />
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-            )}
-
             {/* Members */}
             {activeCompanyId && (
               <div className="px-3">
@@ -161,7 +146,10 @@ export function DashboardNav() {
                     <span className="flex items-center gap-2"><UsersRound className="h-3.5 w-3.5" /> Members</span>
                     <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", membersOpen && "rotate-180")} />
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="px-1 pb-3">
+                  <CollapsibleContent className="px-1 pb-3 space-y-3">
+                    {(activeRole === "project_lead" || activeRole === "team_lead") && (
+                      <InviteMemberPanel />
+                    )}
                     <MembersPanel />
                   </CollapsibleContent>
                 </Collapsible>
