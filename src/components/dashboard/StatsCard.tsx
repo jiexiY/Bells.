@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,34 +24,25 @@ export function StatsCard({
   iconClassName,
 }: StatsCardProps) {
   return (
-    <Card className={cn("", className)}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div className={cn("p-2 rounded-lg bg-primary/10", iconClassName)}>
-          <Icon className="h-4 w-4 text-primary" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+    <div className={cn("bg-card rounded-xl border border-border p-5 flex items-start justify-between", className)}>
+      <div className="space-y-1">
+        <p className="text-sm text-muted-foreground font-medium">{title}</p>
+        <p className="text-3xl font-bold text-foreground">{value}</p>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-primary font-medium mt-1">{description}</p>
         )}
         {trend && (
-          <div className="flex items-center mt-1">
-            <span
-              className={cn(
-                "text-xs font-medium",
-                trend.isPositive ? "text-emerald-600" : "text-red-600"
-              )}
-            >
-              {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}%
-            </span>
-            <span className="text-xs text-muted-foreground ml-1">from last month</span>
-          </div>
+          <p className={cn(
+            "text-xs font-medium mt-1",
+            trend.isPositive ? "text-primary" : "text-destructive"
+          )}>
+            ↑ {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}% this week
+          </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      <div className={cn("p-2.5 rounded-lg bg-muted", iconClassName)}>
+        <Icon className="h-5 w-5 text-primary" />
+      </div>
+    </div>
   );
 }

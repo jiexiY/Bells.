@@ -1,9 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Project } from "@/types/project";
 import { StatusBadge } from "./StatusBadge";
 import { ProgressBar } from "./ProgressBar";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, FileText, Calendar, User } from "lucide-react";
+import { CheckCircle, XCircle, FileText, Calendar, Users } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,58 +35,54 @@ export function ProjectCard({ project, showFeedbackActions = false, onFeedback }
     }
   };
 
-  const getDepartmentColor = () => {
-    switch (project.department) {
-      case "tech":
-        return "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400";
-      case "marketing":
-        return "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400";
-      case "research":
-        return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400";
-      default:
-        return "";
-    }
+  const formatDate = (date: string) => {
+    const d = new Date(date);
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2 flex-wrap">
-          <div className="space-y-1">
-            <CardTitle className="text-lg leading-tight">{project.name}</CardTitle>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${getDepartmentColor()}`}>
-                {project.department}
-              </span>
-              <StatusBadge status={project.status} type="project" />
-            </div>
-          </div>
+    <div className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+      {/* Header: Title + Badge */}
+      <div>
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <h3 className="font-semibold text-foreground truncate text-base">{project.name}</h3>
+          <StatusBadge status={project.status} type="project" />
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{project.description}</p>
+      </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Progress</span>
-            <span className="font-medium">{project.progress}%</span>
+      {/* Progress */}
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center justify-between text-sm mb-1.5">
+            <span className="text-muted-foreground font-medium">Progress</span>
+            <span className="font-semibold text-foreground">{project.progress}%</span>
           </div>
-          <ProgressBar value={project.progress} showLabel={false} />
+          <ProgressBar value={project.progress} showLabel={false} size="sm" />
         </div>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        {/* Meta: Members + Due Date */}
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5">
-            <User className="w-4 h-4" />
-            <span>{project.leadName}</span>
+            <Users className="w-4 h-4" />
+            <span>3 members</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4" />
-            <span>{new Date(project.dueDate).toLocaleDateString()}</span>
+            <span>{formatDate(project.dueDate)}</span>
           </div>
         </div>
 
+        {/* Lead Role Badge */}
+        <div>
+          <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border">
+            {project.leadName || "Unassigned"}
+          </span>
+        </div>
+
+        {/* Feedback Actions */}
         {showFeedbackActions && project.status !== "complete" && (
-          <div className="flex items-center gap-2 pt-2 border-t">
+          <div className="flex items-center gap-2 pt-2 border-t border-border">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -104,7 +99,7 @@ export function ProjectCard({ project, showFeedbackActions = false, onFeedback }
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="flex-1 text-destructive hover:bg-red-50"
                   onClick={() => setFeedbackType("declined")}
                 >
                   <XCircle className="w-4 h-4 mr-1.5" />
@@ -137,7 +132,7 @@ export function ProjectCard({ project, showFeedbackActions = false, onFeedback }
                     className={
                       feedbackType === "approved"
                         ? "bg-emerald-600 hover:bg-emerald-700"
-                        : "bg-red-600 hover:bg-red-700"
+                        : "bg-destructive hover:bg-destructive/90"
                     }
                   >
                     {feedbackType === "approved" ? "Approve" : "Decline"}
@@ -150,7 +145,7 @@ export function ProjectCard({ project, showFeedbackActions = false, onFeedback }
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

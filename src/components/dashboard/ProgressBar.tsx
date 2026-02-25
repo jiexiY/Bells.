@@ -1,4 +1,3 @@
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 interface ProgressBarProps {
@@ -15,34 +14,28 @@ export function ProgressBar({
   className,
 }: ProgressBarProps) {
   const getProgressColor = () => {
-    if (value >= 75) return "bg-emerald-500";
-    if (value >= 50) return "bg-blue-500";
-    if (value >= 25) return "bg-amber-500";
-    return "bg-slate-400";
+    if (value >= 75) return "bg-primary";
+    if (value >= 50) return "bg-primary/80";
+    if (value >= 25) return "bg-primary/60";
+    return "bg-primary/40";
   };
 
   const getHeight = () => {
     switch (size) {
-      case "sm":
-        return "h-1.5";
-      case "lg":
-        return "h-3";
-      default:
-        return "h-2";
+      case "sm": return "h-1.5";
+      case "lg": return "h-3";
+      default: return "h-2";
     }
   };
 
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <Progress
-        value={value}
-        className={cn("flex-1", getHeight())}
-        style={
-          {
-            "--progress-color": undefined,
-          } as React.CSSProperties
-        }
-      />
+      <div className={cn("flex-1 rounded-full bg-muted overflow-hidden", getHeight())}>
+        <div
+          className={cn("h-full rounded-full transition-all duration-500", getProgressColor())}
+          style={{ width: `${Math.min(value, 100)}%` }}
+        />
+      </div>
       {showLabel && (
         <span className="text-sm font-medium text-muted-foreground min-w-[3rem] text-right">
           {value}%
