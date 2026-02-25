@@ -562,7 +562,11 @@ export type Database = {
     Enums: {
       app_role: "project_lead" | "team_lead" | "member"
       department: "tech" | "marketing" | "research"
-      project_status: "assigned" | "in_progress" | "complete"
+      project_status:
+        | "assigned"
+        | "in_progress"
+        | "complete"
+        | "pending_approval"
       task_status: "declined" | "approved" | "unchecked"
     }
     CompositeTypes: {
@@ -693,7 +697,12 @@ export const Constants = {
     Enums: {
       app_role: ["project_lead", "team_lead", "member"],
       department: ["tech", "marketing", "research"],
-      project_status: ["assigned", "in_progress", "complete"],
+      project_status: [
+        "assigned",
+        "in_progress",
+        "complete",
+        "pending_approval",
+      ],
       task_status: ["declined", "approved", "unchecked"],
     },
   },
