@@ -6,6 +6,7 @@ export interface CompanyRow {
   id: string;
   name: string;
   logo_url: string | null;
+  invite_code: string;
   created_at: string;
 }
 

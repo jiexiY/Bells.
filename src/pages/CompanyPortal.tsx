@@ -36,7 +36,7 @@ export default function CompanyPortal() {
   const [newRole, setNewRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
   const [newDepartment, setNewDepartment] = useState<string>("");
 
-  const handleJoinProject = async () => {
+  const handleJoinWorkspace = async () => {
     if (!inviteCode.trim()) return;
     setJoining(true);
     try {
@@ -47,12 +47,13 @@ export default function CompanyPortal() {
       if (data?.error) {
         toast.error(data.error);
       } else {
-        toast.success(`Joined project "${data.project_name}" successfully!`);
+        toast.success(`Joined "${data.company_name}" successfully!`);
         setInviteCode("");
-        setJoinDialogOpen(false);
+        // Refresh companies list
+        window.location.reload();
       }
     } catch (err: any) {
-      toast.error("Failed to join project");
+      toast.error("Failed to join organization");
     } finally {
       setJoining(false);
     }
@@ -182,9 +183,9 @@ export default function CompanyPortal() {
               onChange={e => setInviteCode(e.target.value.toUpperCase())}
               placeholder="Enter invite code (e.g. A1B2C3D4)"
               className="font-mono tracking-wider"
-              onKeyDown={e => e.key === "Enter" && handleJoinProject()}
+              onKeyDown={e => e.key === "Enter" && handleJoinWorkspace()}
             />
-            <Button onClick={handleJoinProject} disabled={joining || !inviteCode.trim()} className="gap-1.5 shrink-0">
+            <Button onClick={handleJoinWorkspace} disabled={joining || !inviteCode.trim()} className="gap-1.5 shrink-0">
               <KeyRound className="h-4 w-4" />
               {joining ? "Joining..." : "Join"}
             </Button>

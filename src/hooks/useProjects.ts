@@ -12,7 +12,6 @@ export interface ProjectRow {
   department: "tech" | "marketing" | "research";
   created_at: string;
   due_date: string;
-  invite_code: string;
 }
 
 export function useProjects() {
