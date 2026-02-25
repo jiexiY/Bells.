@@ -8,6 +8,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -28,6 +29,8 @@ export default function CompanyPortal() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newRole, setNewRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
+  const [newDepartment, setNewDepartment] = useState<string>("");
 
   const myCompanies = companies.filter(c =>
     memberships.some(m => m.company_id === c.id)
@@ -40,9 +43,16 @@ export default function CompanyPortal() {
 
   const handleCreate = () => {
     if (!newName.trim()) return;
-    createCompany.mutate({ name: newName, role: "project_lead" }, {
+    if ((newRole === "team_lead" || newRole === "member") && !newDepartment) return;
+    createCompany.mutate({
+      name: newName,
+      role: newRole,
+      department: newRole !== "project_lead" ? newDepartment : undefined,
+    }, {
       onSuccess: () => {
         setNewName("");
+        setNewRole("project_lead");
+        setNewDepartment("");
         setDialogOpen(false);
       },
     });
@@ -154,6 +164,30 @@ export default function CompanyPortal() {
                   <Label>Organization Name</Label>
                   <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Acme Corp" />
                 </div>
+                <div className="space-y-2">
+                  <Label>Your Role</Label>
+                  <Select value={newRole} onValueChange={(v) => setNewRole(v as any)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="project_lead">Project Lead</SelectItem>
+                      <SelectItem value="team_lead">Team Lead</SelectItem>
+                      <SelectItem value="member">Member</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {newRole !== "project_lead" && (
+                  <div className="space-y-2">
+                    <Label>Department</Label>
+                    <Select value={newDepartment} onValueChange={setNewDepartment}>
+                      <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tech">Tech</SelectItem>
+                        <SelectItem value="marketing">Marketing</SelectItem>
+                        <SelectItem value="research">Research</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
