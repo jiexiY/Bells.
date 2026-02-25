@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FolderOpen, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FileText, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -121,12 +121,12 @@ export function DashboardNav() {
               </div>
             )}
 
-            {/* Storage & Documents */}
+            {/* Documents */}
             {activeCompanyId && (
               <div className="px-3">
                 <Collapsible open={storageOpen} onOpenChange={setStorageOpen}>
                   <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
-                    <span className="flex items-center gap-2"><FolderOpen className="h-3.5 w-3.5" /> Storage</span>
+                    <span className="flex items-center gap-2"><FileText className="h-3.5 w-3.5" /> Documents</span>
                     <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", storageOpen && "rotate-180")} />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="px-1 pb-3">
