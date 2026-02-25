@@ -2,19 +2,26 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FolderCheck, Clock, CheckCircle2, BarChart3, FileText } from "lucide-react";
+import { FolderCheck, Clock, CheckCircle2, BarChart3, Search, CalendarDays, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export default function ProjectLeadDashboard() {
   const { data: projects = [], isLoading } = useProjects();
   const updateProject = useUpdateProject();
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const assignedProjects = projects.filter((p) => p.status === "assigned");
   const inProgressProjects = projects.filter((p) => p.status === "in_progress");
   const completeProjects = projects.filter((p) => p.status === "complete");
   const avgProgress = projects.length ? Math.round(projects.reduce((s, p) => s + p.progress, 0) / projects.length) : 0;
+  const completionRate = projects.length ? Math.round((completeProjects.length / projects.length) * 100) : 0;
 
   const handleFeedback = (projectId: string, feedback: "approved" | "declined", comment: string) => {
     if (feedback === "approved") {
@@ -22,7 +29,6 @@ export default function ProjectLeadDashboard() {
     }
   };
 
-  // Map DB rows to ProjectCard's expected shape
   const toProject = (p: typeof projects[0]) => ({
     id: p.id,
     name: p.name,
@@ -36,69 +42,133 @@ export default function ProjectLeadDashboard() {
     dueDate: p.due_date,
   });
 
+  const tabs = [
+    { key: "all", label: "All", list: projects },
+    { key: "in_progress", label: "In Progress", list: inProgressProjects },
+    { key: "complete", label: "Completed", list: completeProjects },
+    { key: "assigned", label: "Planning", list: assignedProjects },
+  ];
+
+  const activeList = tabs.find(t => t.key === activeTab)?.list || projects;
+  const filteredList = activeList.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.description || "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (isLoading) {
-    return <DashboardLayout title="Project Lead Dashboard" subtitle="Loading..."><p className="text-muted-foreground">Loading projects...</p></DashboardLayout>;
+    return (
+      <DashboardLayout title="Dashboard" subtitle="Loading...">
+        <p className="text-muted-foreground">Loading projects...</p>
+      </DashboardLayout>
+    );
   }
 
   return (
-    <DashboardLayout title="Project Lead Dashboard" subtitle="Overview of all projects and team progress">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 lg:mb-8">
-        <StatsCard title="Total Projects" value={projects.length} icon={FolderCheck} description="Active this quarter" />
-        <StatsCard title="In Progress" value={inProgressProjects.length} icon={Clock} />
-        <StatsCard title="Completed" value={completeProjects.length} icon={CheckCircle2} />
-        <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} description="Across all projects" />
+    <DashboardLayout title="Dashboard" subtitle="Track projects across your organization">
+      {/* Search bar */}
+      <div className="flex items-center justify-end mb-6">
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-card border-border"
+          />
+        </div>
       </div>
 
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList className="flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="all" className="text-xs sm:text-sm">All ({projects.length})</TabsTrigger>
-          <TabsTrigger value="assigned" className="text-xs sm:text-sm">Assigned ({assignedProjects.length})</TabsTrigger>
-          <TabsTrigger value="in_progress" className="text-xs sm:text-sm">In Progress ({inProgressProjects.length})</TabsTrigger>
-          <TabsTrigger value="complete" className="text-xs sm:text-sm">Complete ({completeProjects.length})</TabsTrigger>
-        </TabsList>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatsCard title="Total Projects" value={projects.length} icon={FolderCheck} description={`↑ ${projects.length} this month`} />
+        <StatsCard title="Completed" value={completeProjects.length} icon={CheckCircle2} description={`${completionRate}% completion rate`} />
+        <StatsCard title="In Progress" value={inProgressProjects.length} icon={Clock} />
+        <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} trend={{ value: 5, isPositive: true }} />
+      </div>
 
-        {[
-          { value: "all", list: projects },
-          { value: "assigned", list: assignedProjects },
-          { value: "in_progress", list: inProgressProjects },
-        ].map(({ value, list }) => (
-          <TabsContent key={value} value={value}>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {list.map((p) => (
-                <ProjectCard key={p.id} project={toProject(p)} showFeedbackActions onFeedback={handleFeedback} />
-              ))}
-              {list.length === 0 && <p className="text-muted-foreground col-span-full text-center py-8">No projects</p>}
-            </div>
-          </TabsContent>
+      {/* Tabs */}
+      <div className="flex items-center gap-1 border-b border-border mb-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={cn(
+              "px-4 py-2.5 text-sm font-medium transition-colors relative",
+              activeTab === tab.key
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {tab.label}
+            {activeTab === tab.key && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+            )}
+          </button>
         ))}
+      </div>
 
-        <TabsContent value="complete">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {completeProjects.map((p) => <ProjectCard key={p.id} project={toProject(p)} />)}
-            {completeProjects.length === 0 && <p className="text-muted-foreground col-span-full text-center py-8">No completed projects</p>}
-          </div>
-        </TabsContent>
-      </Tabs>
+      {/* Project Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+        {filteredList.map((p) => (
+          <ProjectCard
+            key={p.id}
+            project={toProject(p)}
+            showFeedbackActions={activeTab !== "complete"}
+            onFeedback={handleFeedback}
+          />
+        ))}
+        {filteredList.length === 0 && (
+          <p className="text-muted-foreground col-span-full text-center py-12">No projects found</p>
+        )}
+      </div>
 
-      <Card className="mt-6 lg:mt-8">
+      {/* Project Calendar */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" />Recent Project Reports</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-primary" />
+              Project Calendar
+            </CardTitle>
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add Event
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[200px]">
-            <div className="space-y-3">
-              {completeProjects.map((p) => (
-                <div key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                  <div>
-                    <p className="font-medium">{p.name}</p>
-                    <p className="text-sm text-muted-foreground">Completed on {new Date(p.due_date).toLocaleDateString()}</p>
-                  </div>
-                  <span className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-full">Report Available</span>
+          <div className="flex flex-col md:flex-row gap-6">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-lg border border-border"
+            />
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground mb-3">
+                {selectedDate?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+              </h3>
+              {/* Show projects due on selected date */}
+              {projects.filter(p => {
+                const due = new Date(p.due_date);
+                return selectedDate && due.toDateString() === selectedDate.toDateString();
+              }).length > 0 ? (
+                <div className="space-y-2">
+                  {projects.filter(p => {
+                    const due = new Date(p.due_date);
+                    return selectedDate && due.toDateString() === selectedDate.toDateString();
+                  }).map(p => (
+                    <div key={p.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="text-sm font-medium">{p.name}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              {completeProjects.length === 0 && <p className="text-muted-foreground text-center py-8">No completed projects yet</p>}
+              ) : (
+                <p className="text-muted-foreground text-sm">No events on this date</p>
+              )}
             </div>
-          </ScrollArea>
+          </div>
         </CardContent>
       </Card>
     </DashboardLayout>
