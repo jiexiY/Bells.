@@ -93,13 +93,13 @@ export default function TeamLeadDashboard() {
             </TabsList>
             <TabsContent value="all">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {departmentProjects.map((p) => <ProjectCard key={p.id} project={toProject(p)} />)}
+                {departmentProjects.map((p) => <ProjectCard key={p.id} project={toProject(p)} inviteCode={p.invite_code} />)}
               </div>
             </TabsContent>
             {(["in_progress", "pending_approval", "complete"] as const).map((status) => (
               <TabsContent key={status} value={status}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {departmentProjects.filter((p) => p.status === status).map((p) => <ProjectCard key={p.id} project={toProject(p)} />)}
+                  {departmentProjects.filter((p) => p.status === status).map((p) => <ProjectCard key={p.id} project={toProject(p)} inviteCode={p.invite_code} />)}
                 </div>
               </TabsContent>
             ))}

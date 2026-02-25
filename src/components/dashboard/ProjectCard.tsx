@@ -2,7 +2,7 @@ import { Project } from "@/types/project";
 import { StatusBadge } from "./StatusBadge";
 import { ProgressBar } from "./ProgressBar";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, FileText, Calendar, Users } from "lucide-react";
+import { CheckCircle, XCircle, FileText, Calendar, Users, Copy, Check as CheckIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,14 +17,24 @@ import { useState } from "react";
 
 interface ProjectCardProps {
   project: Project;
+  inviteCode?: string;
   showFeedbackActions?: boolean;
   onFeedback?: (projectId: string, feedback: "approved" | "declined", comment: string) => void;
 }
 
-export function ProjectCard({ project, showFeedbackActions = false, onFeedback }: ProjectCardProps) {
+export function ProjectCard({ project, inviteCode, showFeedbackActions = false, onFeedback }: ProjectCardProps) {
   const [comment, setComment] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<"approved" | "declined" | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = () => {
+    if (inviteCode) {
+      navigator.clipboard.writeText(inviteCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const handleFeedback = () => {
     if (feedbackType && onFeedback) {
@@ -79,6 +89,18 @@ export function ProjectCard({ project, showFeedbackActions = false, onFeedback }
             {project.leadName || "Unassigned"}
           </span>
         </div>
+
+        {/* Invite Code */}
+        {inviteCode && (
+          <div className="flex items-center gap-2 pt-2 border-t border-border">
+            <code className="flex-1 text-xs font-mono bg-muted px-2 py-1.5 rounded text-muted-foreground tracking-wider">
+              {inviteCode}
+            </code>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={handleCopyCode}>
+              {copied ? <CheckIcon className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </Button>
+          </div>
+        )}
 
         {/* Feedback Actions */}
         {showFeedbackActions && project.status !== "complete" && (

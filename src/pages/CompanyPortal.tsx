@@ -12,9 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Building2, Plus, ArrowRight, Mail, Check, X } from "lucide-react";
+import { Building2, Plus, ArrowRight, Mail, Check, X, KeyRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function CompanyPortal() {
   const { user } = useAuth();
@@ -28,9 +29,34 @@ export default function CompanyPortal() {
   const { setActiveCompanyId } = useCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [inviteCode, setInviteCode] = useState("");
+  const [joining, setJoining] = useState(false);
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
   const [newDepartment, setNewDepartment] = useState<string>("");
+
+  const handleJoinProject = async () => {
+    if (!inviteCode.trim()) return;
+    setJoining(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("join-project", {
+        body: { invite_code: inviteCode.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(data.error);
+      } else {
+        toast.success(`Joined project "${data.project_name}" successfully!`);
+        setInviteCode("");
+        setJoinDialogOpen(false);
+      }
+    } catch (err: any) {
+      toast.error("Failed to join project");
+    } finally {
+      setJoining(false);
+    }
+  };
 
   const myCompanies = companies.filter(c =>
     memberships.some(m => m.company_id === c.id)
@@ -148,7 +174,39 @@ export default function CompanyPortal() {
           </div>
         )}
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 flex justify-center gap-3">
+          {/* Join Project Dialog */}
+          <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <KeyRound className="h-4 w-4" /> Join Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Join a Project</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Invite Code</Label>
+                  <Input
+                    value={inviteCode}
+                    onChange={e => setInviteCode(e.target.value.toUpperCase())}
+                    placeholder="Enter invite code (e.g. A1B2C3D4)"
+                    className="font-mono tracking-wider"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleJoinProject} disabled={joining || !inviteCode.trim()}>
+                  {joining ? "Joining..." : "Join"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Create Organization Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">
