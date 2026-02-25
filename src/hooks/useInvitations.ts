@@ -68,10 +68,12 @@ export function useSendInvitation() {
       email,
       role,
       department,
+      inviterName,
     }: {
       email: string;
       role: "project_lead" | "team_lead" | "member";
       department?: "tech" | "marketing" | "research";
+      inviterName?: string;
     }) => {
       const { data, error } = await supabase
         .from("invitations")
@@ -85,6 +87,27 @@ export function useSendInvitation() {
         .select()
         .single();
       if (error) throw error;
+
+      // Fetch company name for the email
+      let companyName = "the organization";
+      try {
+        const { data: company } = await supabase
+          .from("companies")
+          .select("name")
+          .eq("id", activeCompanyId!)
+          .single();
+        if (company) companyName = company.name;
+      } catch {}
+
+      // Send invite email (fire-and-forget, don't block on failure)
+      try {
+        await supabase.functions.invoke("send-invite-email", {
+          body: { email, companyName, inviterName, role },
+        });
+      } catch (emailErr) {
+        console.error("Failed to send invite email:", emailErr);
+      }
+
       return data;
     },
     onSuccess: () => {
