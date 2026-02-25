@@ -5,7 +5,7 @@ export interface ProjectRow {
   id: string;
   name: string;
   description: string | null;
-  status: "assigned" | "in_progress" | "pending_approval" | "complete";
+  status: string;
   progress: number;
   lead_id: string | null;
   lead_name: string | null;
@@ -32,7 +32,7 @@ export function useUpdateProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ProjectRow> & { id: string }) => {
-      const { error } = await supabase.from("projects").update(updates).eq("id", id);
+      const { error } = await supabase.from("projects").update(updates as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["projects"] }),

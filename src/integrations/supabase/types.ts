@@ -613,7 +613,16 @@ export type Database = {
         | "in_progress"
         | "complete"
         | "pending_approval"
-      task_status: "declined" | "approved" | "unchecked"
+        | "need_revision"
+      task_status:
+        | "declined"
+        | "approved"
+        | "unchecked"
+        | "incomplete"
+        | "in_progress"
+        | "pending_approval"
+        | "need_revision"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -748,8 +757,18 @@ export const Constants = {
         "in_progress",
         "complete",
         "pending_approval",
+        "need_revision",
       ],
-      task_status: ["declined", "approved", "unchecked"],
+      task_status: [
+        "declined",
+        "approved",
+        "unchecked",
+        "incomplete",
+        "in_progress",
+        "pending_approval",
+        "need_revision",
+        "completed",
+      ],
     },
   },
 } as const

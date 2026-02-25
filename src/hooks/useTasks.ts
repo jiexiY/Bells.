@@ -5,7 +5,7 @@ export interface TaskRow {
   id: string;
   title: string;
   description: string | null;
-  status: "declined" | "approved" | "unchecked";
+  status: string;
   project_id: string;
   assigned_to: string | null;
   assigned_by: string | null;
@@ -32,7 +32,7 @@ export function useCreateTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (task: Omit<TaskRow, "id" | "created_at">) => {
-      const { error } = await supabase.from("tasks").insert(task);
+      const { error } = await supabase.from("tasks").insert(task as any);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
@@ -43,7 +43,7 @@ export function useUpdateTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<TaskRow> & { id: string }) => {
-      const { error } = await supabase.from("tasks").update(updates).eq("id", id);
+      const { error } = await supabase.from("tasks").update(updates as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
