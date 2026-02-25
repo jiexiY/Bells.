@@ -33,7 +33,6 @@ export default function ProjectLeadDashboard() {
 
   const assignedProjects = projects.filter((p) => p.status === "assigned");
   const inProgressProjects = projects.filter((p) => p.status === "in_progress");
-  const pendingApprovalProjects = projects.filter((p) => p.status === "pending_approval");
   const completeProjects = projects.filter((p) => p.status === "complete");
   const avgProgress = projects.length ? Math.round(projects.reduce((s, p) => s + p.progress, 0) / projects.length) : 0;
   const completionRate = projects.length ? Math.round((completeProjects.length / projects.length) * 100) : 0;
@@ -58,14 +57,22 @@ export default function ProjectLeadDashboard() {
   });
 
   const tabs = [
-    { key: "all", label: "All", list: projects },
-    { key: "in_progress", label: "In Progress", list: inProgressProjects },
-    { key: "pending_approval", label: "Pending Approval", list: pendingApprovalProjects },
-    { key: "complete", label: "Completed", list: completeProjects },
+    { key: "all", label: "All", count: projects.length },
+    { key: "assigned", label: "Assigned", count: assignedProjects.length },
+    { key: "in_progress", label: "In Progress", count: inProgressProjects.length },
+    { key: "complete", label: "Completed", count: completeProjects.length },
   ];
 
-  const activeList = tabs.find(t => t.key === activeTab)?.list || projects;
-  const filteredList = activeList.filter(p =>
+  const getActiveList = () => {
+    switch (activeTab) {
+      case "assigned": return assignedProjects;
+      case "in_progress": return inProgressProjects;
+      case "complete": return completeProjects;
+      default: return projects;
+    }
+  };
+
+  const filteredList = getActiveList().filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.description || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -80,19 +87,21 @@ export default function ProjectLeadDashboard() {
 
   return (
     <DashboardLayout title="Dashboard" subtitle="Track projects across your organization">
-      {/* Search bar + Invite Code */}
-      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-        {activeCompany?.invite_code && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Invite Code:</span>
-            <code className="text-sm font-mono bg-muted px-2.5 py-1.5 rounded border border-border tracking-wider">
-              {activeCompany.invite_code}
-            </code>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={handleCopyInviteCode}>
-              {codeCopied ? <CheckIcon className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
-            </Button>
-          </div>
-        )}
+      {/* Invite Code Banner - Top Left */}
+      {activeCompany?.invite_code && (
+        <div className="mb-6 flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20 w-fit">
+          <span className="text-sm font-medium text-foreground">Workspace Invite Code:</span>
+          <code className="text-sm font-mono bg-card px-3 py-1.5 rounded border border-border tracking-widest font-semibold text-primary">
+            {activeCompany.invite_code}
+          </code>
+          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleCopyInviteCode}>
+            {codeCopied ? <CheckIcon className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+          </Button>
+        </div>
+      )}
+
+      {/* Search bar */}
+      <div className="mb-6">
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -105,27 +114,27 @@ export default function ProjectLeadDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatsCard title="Total Projects" value={projects.length} icon={FolderCheck} description={`↑ ${projects.length} this month`} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <StatsCard title="Total Projects" value={projects.length} icon={FolderCheck} description={`${assignedProjects.length} assigned`} />
         <StatsCard title="Completed" value={completeProjects.length} icon={CheckCircle2} description={`${completionRate}% completion rate`} />
         <StatsCard title="In Progress" value={inProgressProjects.length} icon={Clock} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} trend={{ value: 5, isPositive: true }} />
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-border mb-6">
+      <div className="flex items-center gap-1 border-b border-border mb-6 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              "px-4 py-2.5 text-sm font-medium transition-colors relative",
+              "px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap",
               activeTab === tab.key
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {tab.label}
+            {tab.label} ({tab.count})
             {activeTab === tab.key && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
             )}
@@ -134,12 +143,12 @@ export default function ProjectLeadDashboard() {
       </div>
 
       {/* Project Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {filteredList.map((p) => (
           <ProjectCard
             key={p.id}
             project={toProject(p)}
-            showFeedbackActions={activeTab !== "complete"}
+            showFeedbackActions={p.status !== "complete"}
             onFeedback={handleFeedback}
           />
         ))}
@@ -151,16 +160,10 @@ export default function ProjectLeadDashboard() {
       {/* Project Calendar */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <CalendarDays className="w-5 h-5 text-primary" />
-              Project Calendar
-            </CardTitle>
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Plus className="w-4 h-4 mr-1.5" />
-              Add Event
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <CalendarDays className="w-5 h-5 text-primary" />
+            Project Calendar
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-6">
@@ -174,7 +177,6 @@ export default function ProjectLeadDashboard() {
               <h3 className="font-semibold text-foreground mb-3">
                 {selectedDate?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
               </h3>
-              {/* Show projects due on selected date */}
               {projects.filter(p => {
                 const due = new Date(p.due_date);
                 return selectedDate && due.toDateString() === selectedDate.toDateString();
