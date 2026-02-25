@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FolderOpen, FileCheck, Building2, ChevronDown, ChevronRight, UserPlus } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
@@ -153,8 +154,13 @@ export function DashboardNav() {
 
           {/* Footer */}
           <div className="p-4 border-t border-border space-y-2">
-            {profileName && <p className="text-sm font-medium text-foreground px-3">{profileName}</p>}
-            <p className="text-xs text-muted-foreground capitalize px-3">{activeRole?.replace("_", " ") || "No role"}</p>
+            <div className="flex items-center justify-between px-3">
+              <div>
+                {profileName && <p className="text-sm font-medium text-foreground">{profileName}</p>}
+                <p className="text-xs text-muted-foreground capitalize">{activeRole?.replace("_", " ") || "No role"}</p>
+              </div>
+              <ThemeToggle />
+            </div>
             <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
               Sign Out
