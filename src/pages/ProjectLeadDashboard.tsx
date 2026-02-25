@@ -1,9 +1,11 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useCompanies } from "@/hooks/useCompanies";
+import { useMembers } from "@/hooks/useMembers";
 import { FolderCheck, Clock, CheckCircle2, BarChart3, Search, CalendarDays, Copy, Check as CheckIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +24,8 @@ export default function ProjectLeadDashboard() {
   const { activeCompanyId } = useCompany();
   const { data: companies = [] } = useCompanies();
   const activeCompany = companies.find(c => c.id === activeCompanyId);
+  const { data: allMembers = [] } = useMembers();
+  const teamLeadsAndMembers = allMembers.filter(m => m.role === "team_lead" || m.role === "member");
 
   const handleCopyInviteCode = () => {
     if (activeCompany?.invite_code) {
@@ -125,6 +129,14 @@ export default function ProjectLeadDashboard() {
         <StatsCard title="In Progress" value={inProgressProjects.length} icon={Clock} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} />
       </div>
+
+      {/* Task Assignment Section */}
+      <TaskAssignmentSection
+        projects={projects.map(p => ({ id: p.id, name: p.name }))}
+        assignees={teamLeadsAndMembers.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
+        title="Assign Tasks"
+        description="Create and assign tasks to team leads and members"
+      />
 
       {/* Tabs */}
       <div className="flex items-center gap-1 border-b border-border mb-6 overflow-x-auto">
