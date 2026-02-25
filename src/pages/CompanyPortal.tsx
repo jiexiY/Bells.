@@ -5,15 +5,13 @@ import { useUnreadCountByCompany } from "@/hooks/useNotifications";
 import { useMyInvitations, useRespondInvitation } from "@/hooks/useInvitations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Building2, Plus, ArrowRight, Mail, Check, X, KeyRound } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,8 +27,9 @@ export default function CompanyPortal() {
   const { setActiveCompanyId } = useCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
+  const [joinRole, setJoinRole] = useState<"team_lead" | "member">("member");
+  const [joinDepartment, setJoinDepartment] = useState<string>("");
   const [joining, setJoining] = useState(false);
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
@@ -38,19 +37,30 @@ export default function CompanyPortal() {
 
   const handleJoinWorkspace = async () => {
     if (!inviteCode.trim()) return;
+    if (!joinDepartment) {
+      toast.error("Please select a department");
+      return;
+    }
     setJoining(true);
     try {
       const { data, error } = await supabase.functions.invoke("join-project", {
-        body: { invite_code: inviteCode.trim() },
+        body: { invite_code: inviteCode.trim(), role: joinRole, department: joinDepartment },
       });
       if (error) throw error;
       if (data?.error) {
         toast.error(data.error);
       } else {
-        toast.success(`Joined "${data.company_name}" successfully!`);
+        toast.success(`Joined "${data.company_name}" as ${joinRole.replace("_", " ")}!`);
         setInviteCode("");
-        // Refresh companies list
-        window.location.reload();
+        setJoinRole("member");
+        setJoinDepartment("");
+        // Set the active company and navigate to dashboard
+        if (data.company_id) {
+          setActiveCompanyId(data.company_id);
+          navigate("/");
+        } else {
+          window.location.reload();
+        }
       }
     } catch (err: any) {
       toast.error("Failed to join organization");
@@ -106,7 +116,7 @@ export default function CompanyPortal() {
                 onClick={() => handleEnter(company.id)}
               >
                 <CardContent className="flex items-center justify-between p-5">
-              <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4">
                     <div className="relative">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Building2 className="h-6 w-6 text-primary" />
@@ -180,9 +190,10 @@ export default function CompanyPortal() {
           </div>
         )}
 
-        {/* Inline Invite Code Input */}
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <div className="flex items-center gap-2 flex-1 max-w-md">
+        {/* Join with Invite Code */}
+        <div className="mt-6 space-y-3">
+          <h2 className="text-sm font-semibold text-foreground text-center">Join with Invite Code</h2>
+          <div className="flex flex-col sm:flex-row items-stretch gap-2 max-w-lg mx-auto">
             <Input
               value={inviteCode}
               onChange={e => setInviteCode(e.target.value.toUpperCase())}
@@ -190,15 +201,37 @@ export default function CompanyPortal() {
               className="font-mono tracking-wider"
               onKeyDown={e => e.key === "Enter" && handleJoinWorkspace()}
             />
-            <Button onClick={handleJoinWorkspace} disabled={joining || !inviteCode.trim()} className="gap-1.5 shrink-0">
-              <KeyRound className="h-4 w-4" />
-              {joining ? "Joining..." : "Join"}
-            </Button>
           </div>
+          {inviteCode.trim() && (
+            <div className="flex flex-col sm:flex-row items-stretch gap-2 max-w-lg mx-auto">
+              <Select value={joinRole} onValueChange={(v) => setJoinRole(v as "team_lead" | "member")}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="team_lead">Team Lead</SelectItem>
+                  <SelectItem value="member">Team Member</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={joinDepartment} onValueChange={setJoinDepartment}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tech">Tech</SelectItem>
+                  <SelectItem value="marketing">Marketing</SelectItem>
+                  <SelectItem value="research">Research</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={handleJoinWorkspace} disabled={joining || !inviteCode.trim()} className="gap-1.5 shrink-0">
+                <KeyRound className="h-4 w-4" />
+                {joining ? "Joining..." : "Join"}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="mt-4 flex justify-center gap-3">
-          {/* Create Organization Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">

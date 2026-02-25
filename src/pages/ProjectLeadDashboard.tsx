@@ -4,7 +4,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useCompanies } from "@/hooks/useCompanies";
-import { FolderCheck, Clock, CheckCircle2, BarChart3, Search, CalendarDays, Plus, Copy, Check as CheckIcon } from "lucide-react";
+import { FolderCheck, Clock, CheckCircle2, BarChart3, Search, CalendarDays, Copy, Check as CheckIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ export default function ProjectLeadDashboard() {
 
   const assignedProjects = projects.filter((p) => p.status === "assigned");
   const inProgressProjects = projects.filter((p) => p.status === "in_progress");
+  const pendingApprovalProjects = projects.filter((p) => p.status === "pending_approval");
   const completeProjects = projects.filter((p) => p.status === "complete");
   const avgProgress = projects.length ? Math.round(projects.reduce((s, p) => s + p.progress, 0) / projects.length) : 0;
   const completionRate = projects.length ? Math.round((completeProjects.length / projects.length) * 100) : 0;
@@ -40,6 +41,8 @@ export default function ProjectLeadDashboard() {
   const handleFeedback = (projectId: string, feedback: "approved" | "declined", comment: string) => {
     if (feedback === "approved") {
       updateProject.mutate({ id: projectId, status: "complete", progress: 100 });
+    } else {
+      updateProject.mutate({ id: projectId, status: "need_revision" as any });
     }
   };
 
@@ -47,7 +50,7 @@ export default function ProjectLeadDashboard() {
     id: p.id,
     name: p.name,
     description: p.description || "",
-    status: p.status,
+    status: p.status as any,
     progress: p.progress,
     leadId: p.lead_id || "",
     leadName: p.lead_name || "",
@@ -60,6 +63,7 @@ export default function ProjectLeadDashboard() {
     { key: "all", label: "All", count: projects.length },
     { key: "assigned", label: "Assigned", count: assignedProjects.length },
     { key: "in_progress", label: "In Progress", count: inProgressProjects.length },
+    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalProjects.length },
     { key: "complete", label: "Completed", count: completeProjects.length },
   ];
 
@@ -67,6 +71,7 @@ export default function ProjectLeadDashboard() {
     switch (activeTab) {
       case "assigned": return assignedProjects;
       case "in_progress": return inProgressProjects;
+      case "pending_approval": return pendingApprovalProjects;
       case "complete": return completeProjects;
       default: return projects;
     }
@@ -86,8 +91,8 @@ export default function ProjectLeadDashboard() {
   }
 
   return (
-    <DashboardLayout title="Dashboard" subtitle="Track projects across your organization">
-      {/* Invite Code Banner - Top Left */}
+    <DashboardLayout title="Project Lead Dashboard" subtitle="Track projects across your organization">
+      {/* Invite Code Banner */}
       {activeCompany?.invite_code && (
         <div className="mb-6 flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20 w-fit">
           <span className="text-sm font-medium text-foreground">Workspace Invite Code:</span>
@@ -118,7 +123,7 @@ export default function ProjectLeadDashboard() {
         <StatsCard title="Total Projects" value={projects.length} icon={FolderCheck} description={`${assignedProjects.length} assigned`} />
         <StatsCard title="Completed" value={completeProjects.length} icon={CheckCircle2} description={`${completionRate}% completion rate`} />
         <StatsCard title="In Progress" value={inProgressProjects.length} icon={Clock} />
-        <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} trend={{ value: 5, isPositive: true }} />
+        <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} />
       </div>
 
       {/* Tabs */}
@@ -148,7 +153,7 @@ export default function ProjectLeadDashboard() {
           <ProjectCard
             key={p.id}
             project={toProject(p)}
-            showFeedbackActions={p.status !== "complete"}
+            showFeedbackActions={p.status === "pending_approval"}
             onFeedback={handleFeedback}
           />
         ))}

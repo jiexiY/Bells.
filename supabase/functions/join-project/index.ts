@@ -34,13 +34,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { invite_code } = await req.json();
+    const { invite_code, role, department } = await req.json();
     if (!invite_code || typeof invite_code !== "string") {
       return new Response(JSON.stringify({ error: "Invite code is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const validRoles = ["team_lead", "member"];
+    const selectedRole = validRoles.includes(role) ? role : "member";
+
+    const validDepartments = ["tech", "marketing", "research"];
+    const selectedDepartment = validDepartments.includes(department) ? department : null;
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -73,13 +79,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Add user as member
+    // Add user as member with chosen role and department
     const { error: insertError } = await adminClient
       .from("company_memberships")
       .insert({
         company_id: company.id,
         user_id: user.id,
-        role: "member",
+        role: selectedRole,
+        department: selectedDepartment,
       });
 
     if (insertError) {
@@ -89,13 +96,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Also insert user_roles entry for the member role
+    // Also insert/update user_roles entry
     await adminClient
       .from("user_roles")
-      .upsert({ user_id: user.id, role: "member" }, { onConflict: "user_id" });
+      .upsert({ user_id: user.id, role: selectedRole, department: selectedDepartment }, { onConflict: "user_id" });
 
     return new Response(
-      JSON.stringify({ success: true, company_name: company.name, company_id: company.id }),
+      JSON.stringify({ success: true, company_name: company.name, company_id: company.id, role: selectedRole }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
