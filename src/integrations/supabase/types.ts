@@ -593,6 +593,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      project_has_department: {
+        Args: {
+          _department: Database["public"]["Enums"]["department"]
+          _project_id: string
+        }
+        Returns: boolean
+      }
       user_has_tasks_in_project: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
