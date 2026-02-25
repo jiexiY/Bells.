@@ -106,7 +106,7 @@ export default function CompanyPortal() {
                 onClick={() => handleEnter(company.id)}
               >
                 <CardContent className="flex items-center justify-between p-5">
-                  <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4">
                     <div className="relative">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Building2 className="h-6 w-6 text-primary" />
@@ -122,6 +122,11 @@ export default function CompanyPortal() {
                       <p className="text-sm text-muted-foreground capitalize">
                         {membership?.role?.replace("_", " ")} {membership?.department ? `· ${membership.department}` : ""}
                       </p>
+                      {membership?.role === "project_lead" && company.invite_code && (
+                        <p className="text-xs text-primary font-mono mt-0.5">
+                          Invite: <span className="font-semibold tracking-wider">{company.invite_code}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
