@@ -97,6 +97,14 @@
     --toolbar-bg: 220 25% 12%;
     --sidebar-bg: 220 25% 12%;
 
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -1px hsl(0 0% 0% / 0.2);
+    --shadow-lg: 0 10px 25px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -2px hsl(0 0% 0% / 0.3);
+    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.3), 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+
+    --gradient-primary: linear-gradient(135deg, hsl(199 89% 55%), hsl(199 89% 42%));
+    --gradient-surface: linear-gradient(180deg, hsl(220 25% 12%), hsl(220 25% 8%));
+
     --sidebar-background: 220 25% 12%;
     --sidebar-foreground: 210 20% 98%;
     --sidebar-primary: 199 89% 55%;

@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CompanyProvider, useCompany } from "@/contexts/CompanyContext";
 import AuthPage from "./pages/AuthPage";
@@ -55,27 +56,29 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <CompanyProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/companies" element={<ProtectedRoute><CompanyPortal /></ProtectedRoute>} />
-              <Route path="/" element={<RoleRouter />} />
-              <Route path="/project-lead" element={<ProtectedRoute allowedRoles={["project_lead"]}><ProjectLeadDashboard /></ProtectedRoute>} />
-              <Route path="/team-lead" element={<ProtectedRoute allowedRoles={["team_lead"]}><TeamLeadDashboard /></ProtectedRoute>} />
-              <Route path="/member" element={<ProtectedRoute allowedRoles={["member"]}><TeamMemberDashboard /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </CompanyProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <CompanyProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/companies" element={<ProtectedRoute><CompanyPortal /></ProtectedRoute>} />
+                <Route path="/" element={<RoleRouter />} />
+                <Route path="/project-lead" element={<ProtectedRoute allowedRoles={["project_lead"]}><ProjectLeadDashboard /></ProtectedRoute>} />
+                <Route path="/team-lead" element={<ProtectedRoute allowedRoles={["team_lead"]}><TeamLeadDashboard /></ProtectedRoute>} />
+                <Route path="/member" element={<ProtectedRoute allowedRoles={["member"]}><TeamMemberDashboard /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </CompanyProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
