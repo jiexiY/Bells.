@@ -54,7 +54,8 @@ export default function AuthPage() {
       const email = contactMethod === "email" ? signupEmail : `${signupPhone}@phone.placeholder`;
       const dept = signupRole !== "project_lead" ? signupDepartment : undefined;
       await signUp(email, signupPassword, signupName, signupRole, dept);
-      toast({ title: "Account created!", description: "Please check your email to verify your account." });
+      toast({ title: "Account created!", description: "Welcome to Bells!" });
+      navigate("/companies");
     } catch (err: any) {
       toast({ title: "Signup failed", description: err.message, variant: "destructive" });
     } finally {
