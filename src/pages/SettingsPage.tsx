@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCompanies, useCompanyMemberships, useCreateCompany } from "@/hooks/useCompanies";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 import {
   User,
   Settings,
@@ -19,6 +25,12 @@ import {
   Building2,
   ArrowLeft,
   Camera,
+  Globe,
+  Sun,
+  Moon,
+  Lock,
+  Plus,
+  Circle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +54,23 @@ const timezones = [
   "Japan Standard (JST) — UTC+9",
 ];
 
+const languages = [
+  { value: "en", label: "English" },
+  { value: "es", label: "Español" },
+  { value: "fr", label: "Français" },
+  { value: "de", label: "Deutsch" },
+  { value: "pt", label: "Português" },
+  { value: "ja", label: "日本語" },
+  { value: "zh", label: "中文" },
+  { value: "ar", label: "العربية" },
+];
+
+const statusOptions = [
+  { value: "active", label: "Active", color: "bg-green-500", description: "You're available and online" },
+  { value: "away", label: "Away", color: "bg-yellow-500", description: "You're temporarily away" },
+  { value: "vacation", label: "Vacation", color: "bg-orange-500", description: "You're on vacation" },
+];
+
 interface ProfileData {
   name: string;
   email: string;
@@ -56,17 +85,29 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
+  const { data: companies = [] } = useCompanies();
+  const { data: memberships = [] } = useCompanyMemberships();
+  const createCompany = useCreateCompany();
+
   const [activeTab, setActiveTab] = useState("profile");
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
-    name: "",
-    email: "",
-    phone: "",
-    bio: "",
-    job_title: "",
-    timezone: "",
-    avatar_url: "",
+    name: "", email: "", phone: "", bio: "", job_title: "", timezone: "", avatar_url: "",
   });
+  const [language, setLanguage] = useState("en");
+  const [userStatus, setUserStatus] = useState("active");
+
+  // Security
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  // Workspaces
+  const [newWsDialogOpen, setNewWsDialogOpen] = useState(false);
+  const [newWsName, setNewWsName] = useState("");
+  const [newWsRole, setNewWsRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
 
   useEffect(() => {
     if (!user) return;
@@ -112,6 +153,45 @@ export default function SettingsPage() {
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters.", variant: "destructive" });
+      return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: "Password changed successfully." });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+  };
+
+  const handleCreateWorkspace = () => {
+    if (!newWsName.trim()) return;
+    createCompany.mutate(
+      { name: newWsName, role: newWsRole },
+      {
+        onSuccess: () => {
+          setNewWsName("");
+          setNewWsDialogOpen(false);
+          toast({ title: "Created", description: "Workspace created successfully." });
+        },
+        onError: () => {
+          toast({ title: "Error", description: "Failed to create workspace.", variant: "destructive" });
+        },
+      }
+    );
+  };
+
   const nameParts = profile.name.split(" ");
   const firstName = nameParts[0] || "";
   const lastName = nameParts.slice(1).join(" ") || "";
@@ -121,6 +201,8 @@ export default function SettingsPage() {
     setProfile((p) => ({ ...p, name: `${v} ${lastName}`.trim() }));
   const setLastName = (v: string) =>
     setProfile((p) => ({ ...p, name: `${firstName} ${v}`.trim() }));
+
+  const currentStatus = statusOptions.find((s) => s.value === userStatus) || statusOptions[0];
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,8 +219,8 @@ export default function SettingsPage() {
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-green-500" />
-            Active
+            <span className={cn("h-2 w-2 rounded-full", currentStatus.color)} />
+            {currentStatus.label}
           </span>
           <Avatar className="h-9 w-9">
             <AvatarImage src={profile.avatar_url} />
@@ -171,16 +253,13 @@ export default function SettingsPage() {
 
         {/* Content */}
         <main className="flex-1 p-8">
+          {/* ===== PROFILE ===== */}
           {activeTab === "profile" && (
             <div className="bg-card border rounded-xl p-8 max-w-3xl">
               <h2 className="text-xl font-semibold text-foreground">Profile</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Manage how others see you in your workspace.
-              </p>
-
+              <p className="text-sm text-muted-foreground mt-1">Manage how others see you in your workspace.</p>
               <Separator className="my-6" />
 
-              {/* Avatar */}
               <div className="flex items-center gap-5 mb-8">
                 <div className="relative">
                   <Avatar className="h-20 w-20">
@@ -199,7 +278,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Name */}
               <div className="grid grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
                   <Label>First name</Label>
@@ -211,11 +289,9 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Job title */}
               <div className="space-y-2 mb-6 max-w-sm">
                 <Label className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  Job title
+                  <Building2 className="h-4 w-4 text-muted-foreground" /> Job title
                 </Label>
                 <Input
                   value={profile.job_title}
@@ -224,7 +300,6 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {/* Email & Phone */}
               <div className="grid grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
                   <Label>Email</Label>
@@ -240,7 +315,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Bio */}
               <div className="space-y-2 mb-1">
                 <Label>Bio</Label>
                 <Textarea
@@ -252,44 +326,316 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">Brief description for your profile.</p>
               </div>
 
-              {/* Timezone */}
               <div className="space-y-2 mb-8 max-w-sm mt-6">
                 <Label>Time zone</Label>
-                <Select
-                  value={profile.timezone}
-                  onValueChange={(v) => setProfile((p) => ({ ...p, timezone: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select timezone" />
-                  </SelectTrigger>
+                <Select value={profile.timezone} onValueChange={(v) => setProfile((p) => ({ ...p, timezone: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select timezone" /></SelectTrigger>
                   <SelectContent>
                     {timezones.map((tz) => (
-                      <SelectItem key={tz} value={tz}>
-                        {tz}
-                      </SelectItem>
+                      <SelectItem key={tz} value={tz}>{tz}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <Separator className="mb-6" />
-
               <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => navigate(-1)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSave} disabled={saving}>
-                  {saving ? "Saving..." : "Save changes"}
-                </Button>
+                <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+                <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button>
               </div>
             </div>
           )}
 
-          {activeTab !== "profile" && (
-            <div className="bg-card border rounded-xl p-8 max-w-3xl flex items-center justify-center min-h-[300px]">
-              <p className="text-muted-foreground">
-                {sidebarItems.find((s) => s.id === activeTab)?.label} settings coming soon.
-              </p>
+          {/* ===== GENERAL ===== */}
+          {activeTab === "general" && (
+            <div className="bg-card border rounded-xl p-8 max-w-3xl space-y-8">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">General</h2>
+                <p className="text-sm text-muted-foreground mt-1">Manage your language and appearance preferences.</p>
+              </div>
+
+              <Separator />
+
+              {/* Language */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2 text-base">
+                  <Globe className="h-4 w-4 text-muted-foreground" /> Language
+                </Label>
+                <p className="text-sm text-muted-foreground">Select your preferred language for the interface.</p>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {languages.map((l) => (
+                      <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Separator />
+
+              {/* Theme */}
+              <div className="space-y-4">
+                <Label className="flex items-center gap-2 text-base">
+                  <Sun className="h-4 w-4 text-muted-foreground" /> Appearance
+                </Label>
+                <p className="text-sm text-muted-foreground">Choose between light and dark mode.</p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setTheme("light")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors w-32",
+                      theme === "light" ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <div className="h-16 w-full rounded-lg bg-white border flex items-center justify-center">
+                      <Sun className="h-6 w-6 text-yellow-500" />
+                    </div>
+                    <span className="text-sm font-medium">Light</span>
+                  </button>
+                  <button
+                    onClick={() => setTheme("dark")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors w-32",
+                      theme === "dark" ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <div className="h-16 w-full rounded-lg bg-gray-900 border border-gray-700 flex items-center justify-center">
+                      <Moon className="h-6 w-6 text-blue-300" />
+                    </div>
+                    <span className="text-sm font-medium">Dark</span>
+                  </button>
+                  <button
+                    onClick={() => setTheme("system")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors w-32",
+                      theme === "system" ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <div className="h-16 w-full rounded-lg bg-gradient-to-r from-white to-gray-900 border flex items-center justify-center">
+                      <Settings className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <span className="text-sm font-medium">System</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===== STATUS ===== */}
+          {activeTab === "status" && (
+            <div className="bg-card border rounded-xl p-8 max-w-3xl space-y-8">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Status</h2>
+                <p className="text-sm text-muted-foreground mt-1">Set your current availability status. This will be visible to your teammates.</p>
+              </div>
+
+              <Separator />
+
+              <RadioGroup value={userStatus} onValueChange={setUserStatus} className="space-y-3">
+                {statusOptions.map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={cn(
+                      "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                      userStatus === opt.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <RadioGroupItem value={opt.value} />
+                    <span className={cn("h-3 w-3 rounded-full shrink-0", opt.color)} />
+                    <div>
+                      <p className="font-medium text-foreground">{opt.label}</p>
+                      <p className="text-sm text-muted-foreground">{opt.description}</p>
+                    </div>
+                  </label>
+                ))}
+              </RadioGroup>
+
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
+                <span className={cn("h-3 w-3 rounded-full", currentStatus.color)} />
+                <p className="text-sm text-foreground">
+                  Your status is currently set to <span className="font-semibold">{currentStatus.label}</span>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ===== NOTIFICATIONS ===== */}
+          {activeTab === "notifications" && (
+            <div className="bg-card border rounded-xl p-8 max-w-3xl space-y-8">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Notifications</h2>
+                <p className="text-sm text-muted-foreground mt-1">Configure how you receive notifications.</p>
+              </div>
+              <Separator />
+              <div className="space-y-4">
+                {[
+                  { label: "Email notifications", desc: "Receive email updates for important events" },
+                  { label: "Task assignments", desc: "Get notified when a task is assigned to you" },
+                  { label: "Announcements", desc: "Receive notifications for new announcements" },
+                  { label: "Direct messages", desc: "Get notified for new direct messages" },
+                  { label: "Document updates", desc: "Receive alerts when documents are updated" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between p-4 rounded-xl border">
+                    <div>
+                      <p className="font-medium text-foreground">{item.label}</p>
+                      <p className="text-sm text-muted-foreground">{item.desc}</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ===== SECURITY ===== */}
+          {activeTab === "security" && (
+            <div className="bg-card border rounded-xl p-8 max-w-3xl space-y-8">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Security</h2>
+                <p className="text-sm text-muted-foreground mt-1">Manage your password and account security.</p>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Lock className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">Change password</p>
+                    <p className="text-sm text-muted-foreground">Update your password to keep your account secure.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 max-w-md">
+                  <div className="space-y-2">
+                    <Label>Current password</Label>
+                    <Input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Enter current password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>New password</Label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirm new password</Label>
+                    <Input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm new password"
+                    />
+                  </div>
+                  <Button
+                    onClick={handlePasswordChange}
+                    disabled={changingPassword || !newPassword || !confirmPassword}
+                  >
+                    {changingPassword ? "Changing..." : "Update password"}
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <p className="font-medium text-foreground">Account</p>
+                <p className="text-sm text-muted-foreground">
+                  Signed in as <span className="font-medium text-foreground">{profile.email}</span>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ===== WORKSPACES ===== */}
+          {activeTab === "workspaces" && (
+            <div className="bg-card border rounded-xl p-8 max-w-3xl space-y-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">Workspaces</h2>
+                  <p className="text-sm text-muted-foreground mt-1">Manage your organizations and workspaces.</p>
+                </div>
+                <Dialog open={newWsDialogOpen} onOpenChange={setNewWsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm"><Plus className="h-4 w-4 mr-1" /> New workspace</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Create workspace</DialogTitle></DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Workspace name</Label>
+                        <Input
+                          value={newWsName}
+                          onChange={(e) => setNewWsName(e.target.value)}
+                          placeholder="e.g. Acme Corp"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Your role</Label>
+                        <Select value={newWsRole} onValueChange={(v: any) => setNewWsRole(v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="project_lead">Project Lead</SelectItem>
+                            <SelectItem value="team_lead">Team Lead</SelectItem>
+                            <SelectItem value="member">Member</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setNewWsDialogOpen(false)}>Cancel</Button>
+                      <Button onClick={handleCreateWorkspace} disabled={createCompany.isPending}>
+                        {createCompany.isPending ? "Creating..." : "Create"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                {memberships.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-6">No workspaces yet. Create one to get started.</p>
+                )}
+                {memberships.map((m) => {
+                  const company = companies.find((c) => c.id === m.company_id);
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex items-center justify-between p-4 rounded-xl border hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{company?.name || "Unknown"}</p>
+                          <p className="text-sm text-muted-foreground capitalize">{m.role.replace("_", " ")}{m.department ? ` · ${m.department}` : ""}</p>
+                        </div>
+                      </div>
+                      <span className={cn(
+                        "text-xs font-medium px-2.5 py-1 rounded-full",
+                        m.is_active ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
+                      )}>
+                        {m.is_active ? "Active" : "Inactive"}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </main>
