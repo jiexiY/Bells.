@@ -174,38 +174,24 @@ export default function CompanyPortal() {
           </div>
         )}
 
-        <div className="mt-6 flex justify-center gap-3">
-          {/* Join Project Dialog */}
-          <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <KeyRound className="h-4 w-4" /> Join Project
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Join a Project</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Invite Code</Label>
-                  <Input
-                    value={inviteCode}
-                    onChange={e => setInviteCode(e.target.value.toUpperCase())}
-                    placeholder="Enter invite code (e.g. A1B2C3D4)"
-                    className="font-mono tracking-wider"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleJoinProject} disabled={joining || !inviteCode.trim()}>
-                  {joining ? "Joining..." : "Join"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+        {/* Inline Invite Code Input */}
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <div className="flex items-center gap-2 flex-1 max-w-md">
+            <Input
+              value={inviteCode}
+              onChange={e => setInviteCode(e.target.value.toUpperCase())}
+              placeholder="Enter invite code (e.g. A1B2C3D4)"
+              className="font-mono tracking-wider"
+              onKeyDown={e => e.key === "Enter" && handleJoinProject()}
+            />
+            <Button onClick={handleJoinProject} disabled={joining || !inviteCode.trim()} className="gap-1.5 shrink-0">
+              <KeyRound className="h-4 w-4" />
+              {joining ? "Joining..." : "Join"}
+            </Button>
+          </div>
+        </div>
 
+        <div className="mt-4 flex justify-center gap-3">
           {/* Create Organization Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
