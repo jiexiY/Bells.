@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FileText, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FileText, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight, UsersRound } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { CommunicationPanel } from "./CommunicationPanel";
 import { DocumentSubmissionPanel } from "./DocumentSubmissionPanel";
 import { InviteMemberPanel } from "./InviteMemberPanel";
+import { MembersPanel } from "./MembersPanel";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 export function DashboardNav() {
@@ -24,6 +25,7 @@ export function DashboardNav() {
   const [commOpen, setCommOpen] = useState(false);
   const [storageOpen, setStorageOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
   const activeCompany = companies.find(c => c.id === activeCompanyId);
   const hasMultipleMemberships = memberships.length >= 2;
 
@@ -146,6 +148,21 @@ export function DashboardNav() {
                   </CollapsibleTrigger>
                   <CollapsibleContent className="px-1 pb-3">
                     <InviteMemberPanel />
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            )}
+
+            {/* Members */}
+            {activeCompanyId && (
+              <div className="px-3">
+                <Collapsible open={membersOpen} onOpenChange={setMembersOpen}>
+                  <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
+                    <span className="flex items-center gap-2"><UsersRound className="h-3.5 w-3.5" /> Members</span>
+                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", membersOpen && "rotate-180")} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="px-1 pb-3">
+                    <MembersPanel />
                   </CollapsibleContent>
                 </Collapsible>
               </div>
