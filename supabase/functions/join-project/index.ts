@@ -23,7 +23,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // User client to get authenticated user
     const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -43,16 +42,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role to look up project by invite code
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: project, error: projectError } = await adminClient
-      .from("projects")
-      .select("id, name, department")
+    // Look up company by invite code
+    const { data: company, error: companyError } = await adminClient
+      .from("companies")
+      .select("id, name")
       .eq("invite_code", invite_code.toUpperCase().trim())
       .single();
 
-    if (projectError || !project) {
+    if (companyError || !company) {
       return new Response(JSON.stringify({ error: "Invalid invite code" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -61,37 +60,42 @@ Deno.serve(async (req) => {
 
     // Check if already a member
     const { data: existing } = await adminClient
-      .from("project_members")
+      .from("company_memberships")
       .select("id")
-      .eq("project_id", project.id)
+      .eq("company_id", company.id)
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (existing) {
-      return new Response(JSON.stringify({ error: "Already a member of this project", project_name: project.name }), {
+      return new Response(JSON.stringify({ error: "Already a member of this organization", company_name: company.name }), {
         status: 409,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Add user as project member
+    // Add user as member
     const { error: insertError } = await adminClient
-      .from("project_members")
+      .from("company_memberships")
       .insert({
-        project_id: project.id,
+        company_id: company.id,
         user_id: user.id,
         role: "member",
       });
 
     if (insertError) {
-      return new Response(JSON.stringify({ error: "Failed to join project" }), {
+      return new Response(JSON.stringify({ error: "Failed to join organization" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Also insert user_roles entry for the member role
+    await adminClient
+      .from("user_roles")
+      .upsert({ user_id: user.id, role: "member" }, { onConflict: "user_id" });
+
     return new Response(
-      JSON.stringify({ success: true, project_name: project.name, project_id: project.id }),
+      JSON.stringify({ success: true, company_name: company.name, company_id: company.id }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

@@ -2,7 +2,9 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
-import { FolderCheck, Clock, CheckCircle2, BarChart3, Search, CalendarDays, Plus } from "lucide-react";
+import { useCompany } from "@/contexts/CompanyContext";
+import { useCompanies } from "@/hooks/useCompanies";
+import { FolderCheck, Clock, CheckCircle2, BarChart3, Search, CalendarDays, Plus, Copy, Check as CheckIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,6 +18,18 @@ export default function ProjectLeadDashboard() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [codeCopied, setCodeCopied] = useState(false);
+  const { activeCompanyId } = useCompany();
+  const { data: companies = [] } = useCompanies();
+  const activeCompany = companies.find(c => c.id === activeCompanyId);
+
+  const handleCopyInviteCode = () => {
+    if (activeCompany?.invite_code) {
+      navigator.clipboard.writeText(activeCompany.invite_code);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    }
+  };
 
   const assignedProjects = projects.filter((p) => p.status === "assigned");
   const inProgressProjects = projects.filter((p) => p.status === "in_progress");
@@ -66,8 +80,19 @@ export default function ProjectLeadDashboard() {
 
   return (
     <DashboardLayout title="Dashboard" subtitle="Track projects across your organization">
-      {/* Search bar */}
-      <div className="flex items-center justify-end mb-6">
+      {/* Search bar + Invite Code */}
+      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+        {activeCompany?.invite_code && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Invite Code:</span>
+            <code className="text-sm font-mono bg-muted px-2.5 py-1.5 rounded border border-border tracking-wider">
+              {activeCompany.invite_code}
+            </code>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={handleCopyInviteCode}>
+              {codeCopied ? <CheckIcon className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
+            </Button>
+          </div>
+        )}
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -114,7 +139,6 @@ export default function ProjectLeadDashboard() {
           <ProjectCard
             key={p.id}
             project={toProject(p)}
-            inviteCode={p.invite_code}
             showFeedbackActions={activeTab !== "complete"}
             onFeedback={handleFeedback}
           />

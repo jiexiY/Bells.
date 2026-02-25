@@ -95,18 +95,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          invite_code: string
           logo_url: string | null
           name: string
         }
         Insert: {
           created_at?: string
           id?: string
+          invite_code?: string
           logo_url?: string | null
           name: string
         }
         Update: {
           created_at?: string
           id?: string
+          invite_code?: string
           logo_url?: string | null
           name?: string
         }
@@ -470,7 +473,6 @@ export type Database = {
           description: string | null
           due_date: string
           id: string
-          invite_code: string
           lead_id: string | null
           lead_name: string | null
           name: string
@@ -483,7 +485,6 @@ export type Database = {
           description?: string | null
           due_date: string
           id?: string
-          invite_code?: string
           lead_id?: string | null
           lead_name?: string | null
           name: string
@@ -496,7 +497,6 @@ export type Database = {
           description?: string | null
           due_date?: string
           id?: string
-          invite_code?: string
           lead_id?: string | null
           lead_name?: string | null
           name?: string
