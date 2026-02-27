@@ -231,7 +231,7 @@ export function TaskAssignmentSection({
                         <StatusBadge status={t.status as TaskStatus} type="task" />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {t.assignee_name || "Unassigned"} · {project?.name || "Unknown project"} · Due{" "}
+                        {t.assignee_name || "Unassigned"} · {project?.name || (t.project_id ? "Unknown project" : "No project")} · Due{" "}
                         {new Date(t.due_date).toLocaleDateString()}
                       </p>
                     </div>
