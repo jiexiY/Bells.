@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ProgressBar } from "@/components/dashboard/ProgressBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle, XCircle, AlertCircle, ArrowUpCircle, Search } from "lucide-react";
+import { Calendar, Clock, CheckCircle, XCircle, AlertCircle, ArrowUpCircle, Search, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -14,9 +14,21 @@ import type { TaskRow } from "@/hooks/useTasks";
 import type { ProjectRow } from "@/hooks/useProjects";
 import type { TaskStatus } from "@/types/project";
 
+function getDueDateWarning(dueDate: string, status: string) {
+  if (["completed", "approved"].includes(status)) return null;
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diffMs = due.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return { label: `${Math.abs(diffDays)}d overdue`, level: "overdue" as const };
+  if (diffDays === 0) return { label: "Due today", level: "today" as const };
+  if (diffDays <= 2) return { label: `Due in ${diffDays}d`, level: "soon" as const };
+  return null;
+}
+
 function TaskItem({ task, projects, onSubmitForApproval }: { task: TaskRow; projects: ProjectRow[]; onSubmitForApproval?: (taskId: string) => void }) {
   const project = projects.find((p) => p.id === task.project_id);
-  const isOverdue = new Date(task.due_date) < new Date() && !["completed", "approved"].includes(task.status);
+  const warning = getDueDateWarning(task.due_date, task.status);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -30,7 +42,7 @@ function TaskItem({ task, projects, onSubmitForApproval }: { task: TaskRow; proj
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={cn("hover:shadow-md transition-shadow", warning?.level === "overdue" && "border-destructive/40")}>
       <CardContent className="p-4 sm:p-5">
         <div className="flex items-start gap-3 sm:gap-4">
           <div className="flex-shrink-0 mt-0.5">{getStatusIcon(task.status)}</div>
@@ -40,14 +52,26 @@ function TaskItem({ task, projects, onSubmitForApproval }: { task: TaskRow; proj
                 <h3 className="font-medium text-foreground">{task.title}</h3>
                 {project && <p className="text-sm text-muted-foreground">{project.name}</p>}
               </div>
-              <StatusBadge status={task.status as TaskStatus} type="task" />
+              <div className="flex items-center gap-2">
+                {warning && (
+                  <span className={cn(
+                    "inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full",
+                    warning.level === "overdue" && "bg-destructive/10 text-destructive",
+                    warning.level === "today" && "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+                    warning.level === "soon" && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                  )}>
+                    <AlertTriangle className="w-3 h-3" />
+                    {warning.label}
+                  </span>
+                )}
+                <StatusBadge status={task.status as TaskStatus} type="task" />
+              </div>
             </div>
             {task.description && <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>}
             <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-              <div className={cn("flex items-center gap-1", isOverdue && "text-destructive")}>
+              <div className={cn("flex items-center gap-1", warning?.level === "overdue" && "text-destructive")}>
                 <Calendar className="w-3.5 h-3.5" />
                 <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>
-                {isOverdue && <AlertCircle className="w-3 h-3" />}
               </div>
             </div>
             {task.status === "need_revision" && (
