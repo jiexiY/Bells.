@@ -49,10 +49,10 @@ export function TaskAssignmentSection({
     dueDate: "",
   });
 
-  // Only show tasks relevant to the listed projects
+  // Show tasks relevant to the listed projects or standalone tasks
   const projectIds = new Set(projects.map((p) => p.id));
   const recentTasks = allTasks
-    .filter((t) => projectIds.has(t.project_id))
+    .filter((t) => !t.project_id || projectIds.has(t.project_id))
     .slice(0, 8);
 
   // Two-step flow: create unassigned task first, then assign
@@ -60,7 +60,7 @@ export function TaskAssignmentSection({
   const [createdTaskTitle, setCreatedTaskTitle] = useState("");
 
   const handleCreate = () => {
-    if (!newTask.title || !newTask.projectId || !newTask.dueDate) return;
+    if (!newTask.title || !newTask.dueDate) return;
 
     if (step === "create" && !newTask.assignedTo) {
       // If no assignee yet, move to assign step
@@ -74,7 +74,7 @@ export function TaskAssignmentSection({
       title: newTask.title,
       description: newTask.description,
       status: "incomplete",
-      project_id: newTask.projectId,
+      project_id: newTask.projectId || null,
       assigned_to: newTask.assignedTo || null,
       assigned_by: user?.id || null,
       assignee_name: member?.name || "",
@@ -86,12 +86,11 @@ export function TaskAssignmentSection({
   };
 
   const handleSkipAssign = () => {
-    const member = assignees.find((a) => a.user_id === newTask.assignedTo);
     createTask.mutate({
       title: newTask.title,
       description: newTask.description,
       status: "incomplete",
-      project_id: newTask.projectId,
+      project_id: newTask.projectId || null,
       assigned_to: null,
       assigned_by: user?.id || null,
       assignee_name: "",
@@ -148,12 +147,13 @@ export function TaskAssignmentSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Project</Label>
-                    <Select value={newTask.projectId} onValueChange={(v) => setNewTask({ ...newTask, projectId: v })}>
+                    <Label>Project <span className="text-muted-foreground text-xs font-normal">(optional)</span></Label>
+                    <Select value={newTask.projectId} onValueChange={(v) => setNewTask({ ...newTask, projectId: v === "__none__" ? "" : v })}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select project" />
+                        <SelectValue placeholder="No project (standalone task)" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="__none__">No project</SelectItem>
                         {projects.map((p) => (
                           <SelectItem key={p.id} value={p.id}>
                             {p.name}
@@ -193,7 +193,7 @@ export function TaskAssignmentSection({
               {step === "create" ? (
                 <>
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleCreate} disabled={!newTask.title || !newTask.projectId || !newTask.dueDate}>
+                  <Button onClick={handleCreate} disabled={!newTask.title || !newTask.dueDate}>
                     Next: Assign
                   </Button>
                 </>
@@ -231,7 +231,7 @@ export function TaskAssignmentSection({
                         <StatusBadge status={t.status as TaskStatus} type="task" />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {t.assignee_name || "Unassigned"} · {project?.name || "Unknown project"} · Due{" "}
+                        {t.assignee_name || "Unassigned"} · {project?.name || (t.project_id ? "Unknown project" : "No project")} · Due{" "}
                         {new Date(t.due_date).toLocaleDateString()}
                       </p>
                     </div>
