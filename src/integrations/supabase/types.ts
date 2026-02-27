@@ -514,7 +514,7 @@ export type Database = {
           description: string | null
           due_date: string
           id: string
-          project_id: string
+          project_id: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
         }
@@ -526,7 +526,7 @@ export type Database = {
           description?: string | null
           due_date: string
           id?: string
-          project_id: string
+          project_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
         }
@@ -538,7 +538,7 @@ export type Database = {
           description?: string | null
           due_date?: string
           id?: string
-          project_id?: string
+          project_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
         }
