@@ -52,10 +52,10 @@ export function TaskAssignmentSection({
     dueDate: "",
   });
 
-  // Show tasks relevant to the listed projects or standalone tasks
+  // Show tasks relevant to the listed projects, standalone tasks, or tasks created by current user
   const projectIds = new Set(projects.map((p) => p.id));
   const recentTasks = allTasks
-    .filter((t) => !t.project_id || projectIds.has(t.project_id))
+    .filter((t) => !t.project_id || projectIds.has(t.project_id) || t.assigned_by === user?.id)
     ;
 
   // Two-step flow: create unassigned task first, then assign
@@ -219,7 +219,7 @@ export function TaskAssignmentSection({
             <p className="text-sm text-muted-foreground">No tasks assigned yet. Click "New Task" to get started.</p>
           </div>
         ) : (
-          <ScrollArea className="max-h-[350px]">
+          <ScrollArea className="max-h-[600px]">
             <div className="space-y-2">
               {recentTasks.map((t) => {
                 const project = projects.find((p) => p.id === t.project_id);
