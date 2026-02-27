@@ -28,6 +28,18 @@ export function useProjects() {
   });
 }
 
+export function useCreateProject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (project: Omit<ProjectRow, "id" | "created_at">) => {
+      const { data, error } = await supabase.from("projects").insert(project as any).select().single();
+      if (error) throw error;
+      return data as ProjectRow;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["projects"] }),
+  });
+}
+
 export function useUpdateProject() {
   const qc = useQueryClient();
   return useMutation({
