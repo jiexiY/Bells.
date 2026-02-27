@@ -12,6 +12,9 @@ export interface TaskRow {
   assignee_name: string | null;
   due_date: string;
   created_at: string;
+  submission_type: string | null;
+  submission_url: string | null;
+  submission_file_url: string | null;
 }
 
 export function useTasks() {
@@ -31,7 +34,7 @@ export function useTasks() {
 export function useCreateTask() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (task: Omit<TaskRow, "id" | "created_at">) => {
+    mutationFn: async (task: Omit<TaskRow, "id" | "created_at" | "submission_type" | "submission_url" | "submission_file_url">) => {
       const { error } = await supabase.from("tasks").insert(task as any);
       if (error) throw error;
     },

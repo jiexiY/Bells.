@@ -516,6 +516,9 @@ export type Database = {
           id: string
           project_id: string | null
           status: Database["public"]["Enums"]["task_status"]
+          submission_file_url: string | null
+          submission_type: string | null
+          submission_url: string | null
           title: string
         }
         Insert: {
@@ -528,6 +531,9 @@ export type Database = {
           id?: string
           project_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
+          submission_file_url?: string | null
+          submission_type?: string | null
+          submission_url?: string | null
           title: string
         }
         Update: {
@@ -540,6 +546,9 @@ export type Database = {
           id?: string
           project_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
+          submission_file_url?: string | null
+          submission_type?: string | null
+          submission_url?: string | null
           title?: string
         }
         Relationships: [
