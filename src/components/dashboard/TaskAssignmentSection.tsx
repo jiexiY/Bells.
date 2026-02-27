@@ -147,12 +147,13 @@ export function TaskAssignmentSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Project</Label>
-                    <Select value={newTask.projectId} onValueChange={(v) => setNewTask({ ...newTask, projectId: v })}>
+                    <Label>Project <span className="text-muted-foreground text-xs font-normal">(optional)</span></Label>
+                    <Select value={newTask.projectId} onValueChange={(v) => setNewTask({ ...newTask, projectId: v === "__none__" ? "" : v })}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select project" />
+                        <SelectValue placeholder="No project (standalone task)" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="__none__">No project</SelectItem>
                         {projects.map((p) => (
                           <SelectItem key={p.id} value={p.id}>
                             {p.name}
