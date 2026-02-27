@@ -3,12 +3,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Link2, CheckCircle, Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Upload, Link2, CheckCircle, Loader2, Clock, FileText, ExternalLink, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUpdateTask } from "@/hooks/useTasks";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTaskSubmissions, useCreateTaskSubmission } from "@/hooks/useTaskSubmissions";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type SubmissionMode = "file" | "link" | "none";
 
@@ -23,15 +26,23 @@ export function SubmitForApprovalDialog({ open, onOpenChange, taskId, taskTitle 
   const [mode, setMode] = useState<SubmissionMode | null>(null);
   const [linkUrl, setLinkUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [comment, setComment] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const updateTask = useUpdateTask();
+  const createSubmission = useCreateTaskSubmission();
   const { user } = useAuth();
+  const { data: submissions = [] } = useTaskSubmissions(taskId);
+
+  const attemptNumber = submissions.length + 1;
 
   const reset = () => {
     setMode(null);
     setLinkUrl("");
     setFile(null);
+    setComment("");
     setUploading(false);
+    setShowHistory(false);
   };
 
   const handleClose = (val: boolean) => {
@@ -40,7 +51,7 @@ export function SubmitForApprovalDialog({ open, onOpenChange, taskId, taskTitle 
   };
 
   const handleSubmit = async () => {
-    if (!mode) return;
+    if (!mode || !user) return;
 
     try {
       setUploading(true);
@@ -62,6 +73,18 @@ export function SubmitForApprovalDialog({ open, onOpenChange, taskId, taskTitle 
         submissionUrl = linkUrl;
       }
 
+      // Save to submission history
+      await createSubmission.mutateAsync({
+        task_id: taskId,
+        submitted_by: user.id,
+        submission_type: mode,
+        submission_url: submissionUrl,
+        submission_file_url: submissionFileUrl,
+        comment: comment.trim() || null,
+        attempt_number: attemptNumber,
+      });
+
+      // Update task status
       updateTask.mutate(
         {
           id: taskId,
@@ -72,7 +95,7 @@ export function SubmitForApprovalDialog({ open, onOpenChange, taskId, taskTitle 
         } as any,
         {
           onSuccess: () => {
-            toast.success("Task submitted for approval");
+            toast.success(`Submission #${attemptNumber} sent for approval`);
             handleClose(false);
           },
           onError: (err: any) => {
@@ -101,8 +124,50 @@ export function SubmitForApprovalDialog({ open, onOpenChange, taskId, taskTitle 
         <DialogHeader>
           <DialogTitle>Submit for Approval</DialogTitle>
           <DialogDescription className="line-clamp-1">{taskTitle}</DialogDescription>
+          {submissions.length > 0 && (
+            <p className="text-xs text-muted-foreground pt-1">
+              Attempt #{attemptNumber} · 
+              <button onClick={() => setShowHistory(!showHistory)} className="text-primary hover:underline ml-1">
+                {showHistory ? "Hide" : "View"} submission history ({submissions.length})
+              </button>
+            </p>
+          )}
         </DialogHeader>
 
+        {/* Submission History */}
+        {showHistory && submissions.length > 0 && (
+          <ScrollArea className="max-h-48 rounded-lg border border-border">
+            <div className="p-3 space-y-3">
+              {submissions.map((s) => (
+                <div key={s.id} className="flex gap-2 text-xs">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-medium">
+                    {s.attempt_number}
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      {s.submission_type === "file" && <FileText className="w-3 h-3 text-blue-500" />}
+                      {s.submission_type === "link" && <ExternalLink className="w-3 h-3 text-emerald-500" />}
+                      {s.submission_type === "none" && <CheckCircle className="w-3 h-3 text-muted-foreground" />}
+                      <span className="capitalize text-foreground font-medium">{s.submission_type === "none" ? "No attachment" : s.submission_type}</span>
+                      <span className="text-muted-foreground ml-auto">{new Date(s.created_at).toLocaleDateString()}</span>
+                    </div>
+                    {s.submission_url && (
+                      <a href={s.submission_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block">{s.submission_url}</a>
+                    )}
+                    {s.submission_file_url && (
+                      <a href={s.submission_file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block">View file</a>
+                    )}
+                    {s.comment && (
+                      <p className="text-muted-foreground flex items-start gap-1"><MessageSquare className="w-3 h-3 mt-0.5 flex-shrink-0" />{s.comment}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        )}
+
+        {/* Submission Options */}
         <div className="space-y-3 py-2">
           {options.map((opt) => (
             <button
@@ -153,10 +218,24 @@ export function SubmitForApprovalDialog({ open, onOpenChange, taskId, taskTitle 
           </div>
         )}
 
+        {/* Comment field (always visible when a mode is selected) */}
+        {mode && (
+          <div className="space-y-2">
+            <Label>Comment <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Textarea
+              placeholder="Add a note about your submission..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={2}
+              className="resize-none"
+            />
+          </div>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => handleClose(false)}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || uploading || updateTask.isPending}>
-            {uploading ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" />Uploading...</> : "Submit"}
+            {uploading ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" />Uploading...</> : `Submit (#${attemptNumber})`}
           </Button>
         </DialogFooter>
       </DialogContent>

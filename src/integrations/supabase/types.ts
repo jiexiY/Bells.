@@ -505,6 +505,50 @@ export type Database = {
         }
         Relationships: []
       }
+      task_submissions: {
+        Row: {
+          attempt_number: number
+          comment: string | null
+          created_at: string
+          id: string
+          submission_file_url: string | null
+          submission_type: string
+          submission_url: string | null
+          submitted_by: string
+          task_id: string
+        }
+        Insert: {
+          attempt_number?: number
+          comment?: string | null
+          created_at?: string
+          id?: string
+          submission_file_url?: string | null
+          submission_type: string
+          submission_url?: string | null
+          submitted_by: string
+          task_id: string
+        }
+        Update: {
+          attempt_number?: number
+          comment?: string | null
+          created_at?: string
+          id?: string
+          submission_file_url?: string | null
+          submission_type?: string
+          submission_url?: string | null
+          submitted_by?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_by: string | null
