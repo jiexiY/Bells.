@@ -193,7 +193,7 @@ export function TaskAssignmentSection({
               {step === "create" ? (
                 <>
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleCreate} disabled={!newTask.title || !newTask.projectId || !newTask.dueDate}>
+                  <Button onClick={handleCreate} disabled={!newTask.title || !newTask.dueDate}>
                     Next: Assign
                   </Button>
                 </>
