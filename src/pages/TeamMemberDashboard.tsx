@@ -9,6 +9,7 @@ import { Calendar, Clock, CheckCircle, XCircle, AlertCircle, ArrowUpCircle, Sear
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { SubmitForApprovalDialog } from "@/components/dashboard/SubmitForApprovalDialog";
 import type { TaskRow } from "@/hooks/useTasks";
 import type { ProjectRow } from "@/hooks/useProjects";
 import type { TaskStatus } from "@/types/project";
@@ -108,8 +109,11 @@ export default function TeamMemberDashboard() {
     (t.description || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [submitDialogTask, setSubmitDialogTask] = useState<TaskRow | null>(null);
+
   const handleSubmitForApproval = (taskId: string) => {
-    updateTask.mutate({ id: taskId, status: "pending_approval" as any });
+    const task = myTasks.find(t => t.id === taskId);
+    if (task) setSubmitDialogTask(task);
   };
 
   const handleStartTask = (taskId: string) => {
@@ -193,6 +197,14 @@ export default function TeamMemberDashboard() {
           ))
         )}
       </div>
+      {submitDialogTask && (
+        <SubmitForApprovalDialog
+          open={!!submitDialogTask}
+          onOpenChange={(open) => { if (!open) setSubmitDialogTask(null); }}
+          taskId={submitDialogTask.id}
+          taskTitle={submitDialogTask.title}
+        />
+      )}
     </DashboardLayout>
   );
 }
