@@ -113,6 +113,7 @@ export default function TeamLeadDashboard() {
         assignees={members.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
         title="Assign Sub-Tasks"
         description="Create and assign tasks to your team members"
+        onTaskClick={(task) => setReviewTask(task)}
       />
 
       {/* Project Status Tabs */}

@@ -4,7 +4,10 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
 import { ProjectStatusTracker } from "@/components/dashboard/ProjectStatusTracker";
+import { ReviewTaskDialog } from "@/components/dashboard/ReviewTaskDialog";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
+import { useTasks } from "@/hooks/useTasks";
+import type { TaskRow } from "@/hooks/useTasks";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useMembers } from "@/hooks/useMembers";
@@ -18,11 +21,13 @@ import { cn } from "@/lib/utils";
 
 export default function ProjectLeadDashboard() {
   const { data: projects = [], isLoading } = useProjects();
+  const { data: tasks = [] } = useTasks();
   const updateProject = useUpdateProject();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [codeCopied, setCodeCopied] = useState(false);
+  const [reviewTask, setReviewTask] = useState<TaskRow | null>(null);
   const { activeCompanyId } = useCompany();
   const { data: companies = [] } = useCompanies();
   const activeCompany = companies.find(c => c.id === activeCompanyId);
@@ -144,6 +149,7 @@ export default function ProjectLeadDashboard() {
         assignees={teamLeadsAndMembers.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
         title="Assign Tasks"
         description="Create and assign tasks to team leads and members"
+        onTaskClick={(task) => setReviewTask(task)}
       />
 
       {/* Tabs */}
@@ -224,6 +230,15 @@ export default function ProjectLeadDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Review Dialog */}
+      {reviewTask && (
+        <ReviewTaskDialog
+          open={!!reviewTask}
+          onOpenChange={(open) => { if (!open) setReviewTask(null); }}
+          task={reviewTask}
+        />
+      )}
     </DashboardLayout>
   );
 }

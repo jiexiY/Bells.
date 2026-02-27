@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import { StatusBadge } from "./StatusBadge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateTask, useTasks } from "@/hooks/useTasks";
@@ -29,6 +30,7 @@ interface TaskAssignmentSectionProps {
   assignees: Assignee[];
   title?: string;
   description?: string;
+  onTaskClick?: (task: any) => void;
 }
 
 export function TaskAssignmentSection({
@@ -36,6 +38,7 @@ export function TaskAssignmentSection({
   assignees,
   title = "Assign Tasks",
   description = "Create and assign tasks to team members",
+  onTaskClick,
 }: TaskAssignmentSectionProps) {
   const { user } = useAuth();
   const createTask = useCreateTask();
@@ -223,7 +226,11 @@ export function TaskAssignmentSection({
                 return (
                   <div
                     key={t.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border"
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border",
+                      onTaskClick && "cursor-pointer hover:bg-muted/50 transition-colors"
+                    )}
+                    onClick={() => onTaskClick?.(t)}
                   >
                     <div className="flex-1 min-w-0 space-y-0.5">
                       <div className="flex items-center gap-2 flex-wrap">
