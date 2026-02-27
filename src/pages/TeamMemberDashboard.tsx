@@ -80,15 +80,13 @@ export default function TeamMemberDashboard() {
 
   const incompleteTasks = myTasks.filter((t) => t.status === "incomplete" || t.status === "unchecked");
   const inProgressTasks = myTasks.filter((t) => t.status === "in_progress");
-  const pendingApprovalTasks = myTasks.filter((t) => t.status === "pending_approval");
   const needRevisionTasks = myTasks.filter((t) => t.status === "need_revision" || t.status === "declined");
-  const completedTasks = myTasks.filter((t) => t.status === "completed" || t.status === "approved");
+  const completedTasks = myTasks.filter((t) => ["completed", "approved", "pending_approval"].includes(t.status));
 
   const tabs = [
     { key: "all", label: "All", count: myTasks.length },
     { key: "incomplete", label: "Incomplete", count: incompleteTasks.length },
     { key: "in_progress", label: "In Progress", count: inProgressTasks.length },
-    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalTasks.length },
     { key: "need_revision", label: "Need Revision", count: needRevisionTasks.length },
     { key: "completed", label: "Completed", count: completedTasks.length },
   ];
@@ -97,7 +95,6 @@ export default function TeamMemberDashboard() {
     switch (activeTab) {
       case "incomplete": return incompleteTasks;
       case "in_progress": return inProgressTasks;
-      case "pending_approval": return pendingApprovalTasks;
       case "need_revision": return needRevisionTasks;
       case "completed": return completedTasks;
       default: return myTasks;
@@ -140,7 +137,7 @@ export default function TeamMemberDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <Card className="bg-muted/50 border-border">
           <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" />Incomplete</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-bold text-foreground">{incompleteTasks.length}</p></CardContent>
@@ -148,10 +145,6 @@ export default function TeamMemberDashboard() {
         <Card className="bg-muted/50 border-border">
           <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />In Progress</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-bold text-foreground">{inProgressTasks.length}</p></CardContent>
-        </Card>
-        <Card className="bg-muted/50 border-border">
-          <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><ArrowUpCircle className="w-3.5 h-3.5" />Pending</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold text-foreground">{pendingApprovalTasks.length}</p></CardContent>
         </Card>
         <Card className="bg-muted/50 border-border">
           <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5" />Revision</CardTitle></CardHeader>
