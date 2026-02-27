@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CompanyProvider, useCompany } from "@/contexts/CompanyContext";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CompanyPortal from "./pages/CompanyPortal";
 import ProjectLeadDashboard from "./pages/ProjectLeadDashboard";
 import TeamLeadDashboard from "./pages/TeamLeadDashboard";
@@ -67,6 +68,7 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/companies" element={<ProtectedRoute><CompanyPortal /></ProtectedRoute>} />
                 <Route path="/" element={<RoleRouter />} />
                 <Route path="/project-lead" element={<ProtectedRoute allowedRoles={["project_lead"]}><ProjectLeadDashboard /></ProtectedRoute>} />
