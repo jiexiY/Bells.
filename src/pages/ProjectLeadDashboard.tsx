@@ -3,6 +3,7 @@ import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
+import { ProjectStatusTracker } from "@/components/dashboard/ProjectStatusTracker";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useCompanies } from "@/hooks/useCompanies";
@@ -133,6 +134,9 @@ export default function ProjectLeadDashboard() {
 
       {/* Create Project Section */}
       <CreateProjectSection />
+
+      {/* Project Status Tracker */}
+      <ProjectStatusTracker projects={projects} />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection

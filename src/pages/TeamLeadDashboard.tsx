@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ProgressBar } from "@/components/dashboard/ProgressBar";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
+import { ProjectStatusTracker } from "@/components/dashboard/ProjectStatusTracker";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useTasks, useUpdateTask } from "@/hooks/useTasks";
 import { useMembers } from "@/hooks/useMembers";
@@ -99,6 +100,9 @@ export default function TeamLeadDashboard() {
 
       {/* Create Project Section */}
       <CreateProjectSection />
+
+      {/* Project Status Tracker */}
+      <ProjectStatusTracker projects={departmentProjects} />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection
