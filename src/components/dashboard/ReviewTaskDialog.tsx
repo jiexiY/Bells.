@@ -49,7 +49,7 @@ export function ReviewTaskDialog({ open, onOpenChange, task }: ReviewTaskDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Review Submission</DialogTitle>
           <DialogDescription>{task.title}</DialogDescription>
