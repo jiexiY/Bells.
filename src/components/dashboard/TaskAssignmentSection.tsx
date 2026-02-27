@@ -49,10 +49,10 @@ export function TaskAssignmentSection({
     dueDate: "",
   });
 
-  // Only show tasks relevant to the listed projects
+  // Show tasks relevant to the listed projects or standalone tasks
   const projectIds = new Set(projects.map((p) => p.id));
   const recentTasks = allTasks
-    .filter((t) => projectIds.has(t.project_id))
+    .filter((t) => !t.project_id || projectIds.has(t.project_id))
     .slice(0, 8);
 
   // Two-step flow: create unassigned task first, then assign
