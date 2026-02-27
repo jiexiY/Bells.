@@ -55,20 +55,50 @@ export function TaskAssignmentSection({
     .filter((t) => projectIds.has(t.project_id))
     .slice(0, 8);
 
+  // Two-step flow: create unassigned task first, then assign
+  const [step, setStep] = useState<"create" | "assign">("create");
+  const [createdTaskTitle, setCreatedTaskTitle] = useState("");
+
   const handleCreate = () => {
-    if (!newTask.title || !newTask.projectId || !newTask.assignedTo || !newTask.dueDate) return;
+    if (!newTask.title || !newTask.projectId || !newTask.dueDate) return;
+
+    if (step === "create" && !newTask.assignedTo) {
+      // If no assignee yet, move to assign step
+      setCreatedTaskTitle(newTask.title);
+      setStep("assign");
+      return;
+    }
+
     const member = assignees.find((a) => a.user_id === newTask.assignedTo);
     createTask.mutate({
       title: newTask.title,
       description: newTask.description,
       status: "incomplete",
       project_id: newTask.projectId,
-      assigned_to: newTask.assignedTo,
+      assigned_to: newTask.assignedTo || null,
       assigned_by: user?.id || null,
       assignee_name: member?.name || "",
       due_date: newTask.dueDate,
     });
     setNewTask({ title: "", description: "", assignedTo: "", projectId: "", dueDate: "" });
+    setStep("create");
+    setDialogOpen(false);
+  };
+
+  const handleSkipAssign = () => {
+    const member = assignees.find((a) => a.user_id === newTask.assignedTo);
+    createTask.mutate({
+      title: newTask.title,
+      description: newTask.description,
+      status: "incomplete",
+      project_id: newTask.projectId,
+      assigned_to: null,
+      assigned_by: user?.id || null,
+      assignee_name: "",
+      due_date: newTask.dueDate,
+    });
+    setNewTask({ title: "", description: "", assignedTo: "", projectId: "", dueDate: "" });
+    setStep("create");
     setDialogOpen(false);
   };
 
@@ -82,7 +112,7 @@ export function TaskAssignmentSection({
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setStep("create"); }}>
           <DialogTrigger asChild>
             <Button size="sm">
               <Plus className="w-4 h-4 mr-1" />
@@ -91,72 +121,90 @@ export function TaskAssignmentSection({
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Create Task</DialogTitle>
-              <DialogDescription>Assign a task to a team member on a project</DialogDescription>
+              <DialogTitle>{step === "create" ? "Create Task" : `Assign "${createdTaskTitle}"`}</DialogTitle>
+              <DialogDescription>
+                {step === "create"
+                  ? "Create a task — you can assign it right after"
+                  : "Assign the task to a team member, or skip to leave it unassigned"}
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Task Title</Label>
-                <Input
-                  placeholder="Enter task title"
-                  value={newTask.title}
-                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea
-                  placeholder="Describe the task..."
-                  value={newTask.description}
-                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Project</Label>
-                <Select value={newTask.projectId} onValueChange={(v) => setNewTask({ ...newTask, projectId: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Assign To</Label>
-                <Select value={newTask.assignedTo} onValueChange={(v) => setNewTask({ ...newTask, assignedTo: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select assignee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {assignees.map((a) => (
-                      <SelectItem key={a.user_id} value={a.user_id}>
-                        {a.name} <span className="text-muted-foreground capitalize">({a.role.replace("_", " ")})</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Due Date</Label>
-                <Input
-                  type="date"
-                  value={newTask.dueDate}
-                  onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                />
-              </div>
+              {step === "create" ? (
+                <>
+                  <div className="space-y-2">
+                    <Label>Task Title</Label>
+                    <Input
+                      placeholder="Enter task title"
+                      value={newTask.title}
+                      onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      placeholder="Describe the task..."
+                      value={newTask.description}
+                      onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Project</Label>
+                    <Select value={newTask.projectId} onValueChange={(v) => setNewTask({ ...newTask, projectId: v })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select project" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Due Date</Label>
+                    <Input
+                      type="date"
+                      value={newTask.dueDate}
+                      onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <Label>Assign To</Label>
+                  <Select value={newTask.assignedTo} onValueChange={(v) => setNewTask({ ...newTask, assignedTo: v })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select assignee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {assignees.map((a) => (
+                        <SelectItem key={a.user_id} value={a.user_id}>
+                          {a.name} <span className="text-muted-foreground capitalize">({a.role.replace("_", " ")})</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreate} disabled={!newTask.title || !newTask.projectId || !newTask.assignedTo || !newTask.dueDate}>
-                Create Task
-              </Button>
+              {step === "create" ? (
+                <>
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleCreate} disabled={!newTask.title || !newTask.projectId || !newTask.dueDate}>
+                    Next: Assign
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={handleSkipAssign}>Skip (Unassigned)</Button>
+                  <Button onClick={handleCreate} disabled={!newTask.assignedTo}>
+                    Assign & Create
+                  </Button>
+                </>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -2,6 +2,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
+import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useCompanies } from "@/hooks/useCompanies";
@@ -129,6 +130,9 @@ export default function ProjectLeadDashboard() {
         <StatsCard title="In Progress" value={inProgressProjects.length} icon={Clock} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} />
       </div>
+
+      {/* Create Project Section */}
+      <CreateProjectSection />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection

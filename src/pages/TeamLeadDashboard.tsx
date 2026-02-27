@@ -4,6 +4,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ProgressBar } from "@/components/dashboard/ProgressBar";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
+import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useTasks, useUpdateTask } from "@/hooks/useTasks";
 import { useMembers } from "@/hooks/useMembers";
@@ -95,6 +96,9 @@ export default function TeamLeadDashboard() {
         <StatsCard title="Team Members" value={members.length} icon={Users} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={CheckCircle2} />
       </div>
+
+      {/* Create Project Section */}
+      <CreateProjectSection />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection
