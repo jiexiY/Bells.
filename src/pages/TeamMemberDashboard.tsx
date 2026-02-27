@@ -104,13 +104,15 @@ export default function TeamMemberDashboard() {
 
   const incompleteTasks = myTasks.filter((t) => t.status === "incomplete" || t.status === "unchecked");
   const inProgressTasks = myTasks.filter((t) => t.status === "in_progress");
+  const pendingApprovalTasks = myTasks.filter((t) => t.status === "pending_approval");
   const needRevisionTasks = myTasks.filter((t) => t.status === "need_revision" || t.status === "declined");
-  const completedTasks = myTasks.filter((t) => ["completed", "approved", "pending_approval"].includes(t.status));
+  const completedTasks = myTasks.filter((t) => ["completed", "approved"].includes(t.status));
 
   const tabs = [
     { key: "all", label: "All", count: myTasks.length },
     { key: "incomplete", label: "Incomplete", count: incompleteTasks.length },
     { key: "in_progress", label: "In Progress", count: inProgressTasks.length },
+    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalTasks.length },
     { key: "need_revision", label: "Need Revision", count: needRevisionTasks.length },
     { key: "completed", label: "Completed", count: completedTasks.length },
   ];
@@ -119,6 +121,7 @@ export default function TeamMemberDashboard() {
     switch (activeTab) {
       case "incomplete": return incompleteTasks;
       case "in_progress": return inProgressTasks;
+      case "pending_approval": return pendingApprovalTasks;
       case "need_revision": return needRevisionTasks;
       case "completed": return completedTasks;
       default: return myTasks;
