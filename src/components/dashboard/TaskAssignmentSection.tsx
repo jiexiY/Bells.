@@ -56,7 +56,7 @@ export function TaskAssignmentSection({
   const projectIds = new Set(projects.map((p) => p.id));
   const recentTasks = allTasks
     .filter((t) => !t.project_id || projectIds.has(t.project_id))
-    .slice(0, 8);
+    ;
 
   // Two-step flow: create unassigned task first, then assign
   const [step, setStep] = useState<"create" | "assign">("create");
