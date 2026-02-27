@@ -86,12 +86,11 @@ export function TaskAssignmentSection({
   };
 
   const handleSkipAssign = () => {
-    const member = assignees.find((a) => a.user_id === newTask.assignedTo);
     createTask.mutate({
       title: newTask.title,
       description: newTask.description,
       status: "incomplete",
-      project_id: newTask.projectId,
+      project_id: newTask.projectId || null,
       assigned_to: null,
       assigned_by: user?.id || null,
       assignee_name: "",

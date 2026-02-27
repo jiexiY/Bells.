@@ -6,7 +6,7 @@ export interface TaskRow {
   title: string;
   description: string | null;
   status: string;
-  project_id: string;
+  project_id: string | null;
   assigned_to: string | null;
   assigned_by: string | null;
   assignee_name: string | null;
