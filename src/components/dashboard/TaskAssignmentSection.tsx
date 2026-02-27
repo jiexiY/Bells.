@@ -60,7 +60,7 @@ export function TaskAssignmentSection({
   const [createdTaskTitle, setCreatedTaskTitle] = useState("");
 
   const handleCreate = () => {
-    if (!newTask.title || !newTask.projectId || !newTask.dueDate) return;
+    if (!newTask.title || !newTask.dueDate) return;
 
     if (step === "create" && !newTask.assignedTo) {
       // If no assignee yet, move to assign step
@@ -74,7 +74,7 @@ export function TaskAssignmentSection({
       title: newTask.title,
       description: newTask.description,
       status: "incomplete",
-      project_id: newTask.projectId,
+      project_id: newTask.projectId || null,
       assigned_to: newTask.assignedTo || null,
       assigned_by: user?.id || null,
       assignee_name: member?.name || "",
