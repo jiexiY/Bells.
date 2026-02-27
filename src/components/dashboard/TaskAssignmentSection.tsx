@@ -152,7 +152,7 @@ export function TaskAssignmentSection({
                       <SelectTrigger>
                         <SelectValue placeholder="No project (standalone task)" />
                       </SelectTrigger>
-                      <SelectContent>
+                       <SelectContent className="z-[200]">
                         <SelectItem value="__none__">No project</SelectItem>
                         {projects.map((p) => (
                           <SelectItem key={p.id} value={p.id}>
@@ -178,7 +178,7 @@ export function TaskAssignmentSection({
                     <SelectTrigger>
                       <SelectValue placeholder="Select assignee" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[200]">
                       {assignees.map((a) => (
                         <SelectItem key={a.user_id} value={a.user_id}>
                           {a.name} <span className="text-muted-foreground capitalize">({a.role.replace("_", " ")})</span>
