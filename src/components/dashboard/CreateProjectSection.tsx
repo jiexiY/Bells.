@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, FolderPlus, ListTodo } from "lucide-react";
+import { Plus, FolderPlus, ListTodo, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProjects, useCreateProject } from "@/hooks/useProjects";
-import { useTasks } from "@/hooks/useTasks";
+import { useTasks, useCreateTask } from "@/hooks/useTasks";
+import { useMembers } from "@/hooks/useMembers";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { TaskStatus } from "@/types/project";
@@ -27,13 +28,25 @@ export function CreateProjectSection({
 }: CreateProjectSectionProps) {
   const { user, profileName } = useAuth();
   const createProject = useCreateProject();
+  const createTask = useCreateTask();
   const { data: projects = [] } = useProjects();
   const { data: tasks = [] } = useTasks();
+  const { data: members = [] } = useMembers();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
     description: "",
     department: "" as "tech" | "marketing" | "research" | "",
+    dueDate: "",
+  });
+
+  // Task assignment dialog state
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [taskProjectId, setTaskProjectId] = useState("");
+  const [taskForm, setTaskForm] = useState({
+    title: "",
+    description: "",
+    assignedTo: "",
     dueDate: "",
   });
 
@@ -59,6 +72,37 @@ export function CreateProjectSection({
         onError: (err) => toast.error(err.message),
       }
     );
+  };
+
+  const handleAssignTask = () => {
+    if (!taskForm.title || !taskForm.dueDate) return;
+    const member = members.find((m) => m.user_id === taskForm.assignedTo);
+    createTask.mutate(
+      {
+        title: taskForm.title,
+        description: taskForm.description || null,
+        status: "incomplete",
+        project_id: taskProjectId || null,
+        assigned_to: taskForm.assignedTo || null,
+        assigned_by: user?.id || null,
+        assignee_name: member?.name || "",
+        due_date: taskForm.dueDate,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Task assigned successfully");
+          setTaskForm({ title: "", description: "", assignedTo: "", dueDate: "" });
+          setTaskDialogOpen(false);
+        },
+        onError: (err) => toast.error(err.message),
+      }
+    );
+  };
+
+  const openTaskDialog = (projectId: string) => {
+    setTaskProjectId(projectId);
+    setTaskForm({ title: "", description: "", assignedTo: "", dueDate: "" });
+    setTaskDialogOpen(true);
   };
 
   const hasProjects = projects.length > 0;
@@ -151,21 +195,48 @@ export function CreateProjectSection({
                       <h4 className="font-semibold text-sm text-foreground truncate">{project.name}</h4>
                       <StatusBadge status={project.status as any} type="project" />
                     </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2 w-full text-xs h-7"
+                      onClick={() => openTaskDialog(project.id)}
+                    >
+                      <UserPlus className="w-3 h-3 mr-1" />
+                      Assign Task
+                    </Button>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
                     {projectTasks.length === 0 ? (
                       <p className="text-xs text-muted-foreground py-2">No tasks yet</p>
                     ) : (
-                      <ScrollArea className="max-h-[160px]">
+                      <ScrollArea className="max-h-[200px]">
                         <div className="space-y-1.5 mt-2">
                           {projectTasks.map((task) => (
                             <div
                               key={task.id}
-                              className="flex items-center gap-2 text-xs p-1.5 rounded bg-background/60 border border-border/50"
+                              className="flex items-center gap-2 text-xs p-2 rounded bg-background/60 border border-border/50"
                             >
-                              <ListTodo className="w-3 h-3 text-muted-foreground shrink-0" />
-                              <span className="truncate text-foreground">{task.title}</span>
-                              <span className="ml-auto scale-90"><StatusBadge status={task.status as TaskStatus} type="task" /></span>
+                              <div className={cn(
+                                "w-3.5 h-3.5 rounded border-2 shrink-0 flex items-center justify-center",
+                                (task.status === "completed" || task.status === "approved")
+                                  ? "border-primary bg-primary"
+                                  : "border-muted-foreground/40"
+                              )}>
+                                {(task.status === "completed" || task.status === "approved") && (
+                                  <svg className="w-2 h-2 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <span className={cn(
+                                "truncate flex-1",
+                                (task.status === "completed" || task.status === "approved")
+                                  ? "text-muted-foreground line-through"
+                                  : "text-foreground"
+                              )}>{task.title}</span>
+                              <span className="ml-auto scale-90">
+                                <StatusBadge status={task.status as TaskStatus} type="task" />
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -178,6 +249,65 @@ export function CreateProjectSection({
           </div>
         )}
       </CardContent>
+
+      {/* Assign Task Dialog */}
+      <Dialog open={taskDialogOpen} onOpenChange={setTaskDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assign Task</DialogTitle>
+            <DialogDescription>
+              Create a task for {projects.find(p => p.id === taskProjectId)?.name || "this project"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Task Title</Label>
+              <Input
+                placeholder="Enter task title"
+                value={taskForm.title}
+                onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea
+                placeholder="Describe the task..."
+                value={taskForm.description}
+                onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Assign To</Label>
+              <Select value={taskForm.assignedTo} onValueChange={(v) => setTaskForm({ ...taskForm, assignedTo: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select team member" />
+                </SelectTrigger>
+                <SelectContent>
+                  {members.map((m) => (
+                    <SelectItem key={m.user_id} value={m.user_id}>
+                      {m.name} ({m.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Due Date</Label>
+              <Input
+                type="date"
+                value={taskForm.dueDate}
+                onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTaskDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAssignTask} disabled={!taskForm.title || !taskForm.dueDate || createTask.isPending}>
+              {createTask.isPending ? "Assigning..." : "Assign Task"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
