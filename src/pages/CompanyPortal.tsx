@@ -70,7 +70,7 @@ export default function CompanyPortal() {
   };
 
   const myCompanies = companies.filter(c =>
-    memberships.some(m => m.company_id === c.id)
+    memberships.some(m => m.company_id === c.id && m.is_active)
   );
 
   const handleEnter = (companyId: string) => {
