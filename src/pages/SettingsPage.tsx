@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import {
@@ -31,6 +32,7 @@ import {
   Lock,
   Plus,
   Circle,
+  XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -108,6 +110,9 @@ export default function SettingsPage() {
   const [newWsDialogOpen, setNewWsDialogOpen] = useState(false);
   const [newWsName, setNewWsName] = useState("");
   const [newWsRole, setNewWsRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
+  const [closeWsDialogOpen, setCloseWsDialogOpen] = useState(false);
+  const [closingWsId, setClosingWsId] = useState<string | null>(null);
+  const [closingWs, setClosingWs] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -190,6 +195,26 @@ export default function SettingsPage() {
         },
       }
     );
+  };
+
+  const handleCloseWorkspace = async () => {
+    if (!closingWsId || !user) return;
+    setClosingWs(true);
+    const { error } = await supabase
+      .from("company_memberships")
+      .update({ is_active: false } as any)
+      .eq("company_id", closingWsId)
+      .eq("user_id", user.id);
+    setClosingWs(false);
+    if (error) {
+      toast({ title: "Error", description: "Failed to close workspace.", variant: "destructive" });
+    } else {
+      toast({ title: "Workspace closed", description: "The workspace has been deactivated." });
+      setCloseWsDialogOpen(false);
+      setClosingWsId(null);
+      // Refresh memberships
+      window.location.reload();
+    }
   };
 
   const nameParts = profile.name.split(" ");
@@ -612,6 +637,7 @@ export default function SettingsPage() {
                 )}
                 {memberships.map((m) => {
                   const company = companies.find((c) => c.id === m.company_id);
+                  const isProjectLead = m.role === "project_lead";
                   return (
                     <div
                       key={m.id}
@@ -626,12 +652,28 @@ export default function SettingsPage() {
                           <p className="text-sm text-muted-foreground capitalize">{m.role.replace("_", " ")}{m.department ? ` · ${m.department}` : ""}</p>
                         </div>
                       </div>
-                      <span className={cn(
-                        "text-xs font-medium px-2.5 py-1 rounded-full",
-                        m.is_active ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
-                      )}>
-                        {m.is_active ? "Active" : "Inactive"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "text-xs font-medium px-2.5 py-1 rounded-full",
+                          m.is_active ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
+                        )}>
+                          {m.is_active ? "Active" : "Inactive"}
+                        </span>
+                        {isProjectLead && m.is_active && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
+                            onClick={() => {
+                              setClosingWsId(m.company_id);
+                              setCloseWsDialogOpen(true);
+                            }}
+                          >
+                            <XCircle className="h-3.5 w-3.5 mr-1" />
+                            Close
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -640,6 +682,28 @@ export default function SettingsPage() {
           )}
         </main>
       </div>
+
+      {/* Close Workspace Confirmation */}
+      <AlertDialog open={closeWsDialogOpen} onOpenChange={setCloseWsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Close this workspace?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will deactivate the workspace. You and your team members will no longer be able to access it. This action can be reversed by an administrator.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setClosingWsId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCloseWorkspace}
+              disabled={closingWs}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {closingWs ? "Closing..." : "Close workspace"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
