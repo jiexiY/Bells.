@@ -631,6 +631,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      close_company_workspace: {
+        Args: { _company_id: string }
+        Returns: undefined
+      }
       get_user_department: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["department"]

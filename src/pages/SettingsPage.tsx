@@ -200,19 +200,16 @@ export default function SettingsPage() {
   const handleCloseWorkspace = async () => {
     if (!closingWsId || !user) return;
     setClosingWs(true);
-    const { error } = await supabase
-      .from("company_memberships")
-      .update({ is_active: false } as any)
-      .eq("company_id", closingWsId)
-      .eq("user_id", user.id);
+    const { error } = await supabase.rpc("close_company_workspace", {
+      _company_id: closingWsId,
+    });
     setClosingWs(false);
     if (error) {
       toast({ title: "Error", description: "Failed to close workspace.", variant: "destructive" });
     } else {
-      toast({ title: "Workspace closed", description: "The workspace has been deactivated." });
+      toast({ title: "Workspace closed", description: "The workspace has been deactivated for all members." });
       setCloseWsDialogOpen(false);
       setClosingWsId(null);
-      // Refresh memberships
       window.location.reload();
     }
   };
