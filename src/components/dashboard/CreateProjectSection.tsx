@@ -361,6 +361,59 @@ export function CreateProjectSection({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Task Detail Dialog */}
+      <Dialog open={!!selectedTask} onOpenChange={(open) => { if (!open) setSelectedTask(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              {selectedTask?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedTask && (
+            <div className="space-y-4 py-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                <StatusBadge status={selectedTask.status as TaskStatus} type="task" />
+              </div>
+              {selectedTask.description && (
+                <div className="space-y-1">
+                  <span className="text-sm font-medium text-foreground">Description</span>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedTask.description}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarDays className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">Due Date</p>
+                    <p className="font-medium text-foreground">{new Date(selectedTask.due_date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                {selectedTask.assignee_name && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground text-xs">Assigned To</p>
+                      <p className="font-medium text-foreground">{selectedTask.assignee_name}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <CalendarDays className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <p className="text-muted-foreground text-xs">Created</p>
+                  <p className="font-medium text-foreground">{new Date(selectedTask.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedTask(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTaskId} onOpenChange={(open) => { if (!open) setDeleteTaskId(null); }}>
         <AlertDialogContent>
