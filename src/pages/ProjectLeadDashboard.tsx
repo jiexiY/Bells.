@@ -140,8 +140,8 @@ export default function ProjectLeadDashboard() {
       {/* Project Status Tracker */}
       <ProjectStatusTracker projects={projects} />
 
-      {/* Create Project Section */}
-      <CreateProjectSection />
+      {/* Projects Section */}
+      <CreateProjectSection title="Projects" description="Manage your organization's projects" />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection
