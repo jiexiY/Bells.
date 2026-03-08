@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Plus, FolderPlus, UserPlus, ChevronDown, ChevronRight, ListTodo, X, CalendarDays, User, FileText } from "lucide-react";
+import { Plus, FolderPlus, UserPlus, ChevronDown, ChevronRight, ListTodo, CalendarDays, User, FileText, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -275,19 +275,8 @@ export function CreateProjectSection({
                                     <span className="text-[10px] text-muted-foreground">{task.assignee_name}</span>
                                   )}
                                 </div>
-                                <span className="ml-auto shrink-0 flex items-center gap-1.5">
+                                <span className="ml-auto shrink-0">
                                   <StatusBadge status={task.status as TaskStatus} type="task" />
-                                  <span
-                                    role="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleteTaskId(task.id);
-                                    }}
-                                    className="p-0.5 rounded hover:bg-destructive/10 transition-colors"
-                                    title="Delete task"
-                                  >
-                                    <X className="w-3.5 h-3.5 text-destructive" />
-                                  </span>
                                 </span>
                               </button>
                             ))}
@@ -409,9 +398,20 @@ export function CreateProjectSection({
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedTask(null)}>Close</Button>
-          </DialogFooter>
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 border-destructive/30"
+              onClick={() => {
+                if (selectedTask) setDeleteTaskId(selectedTask.id);
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setSelectedTask(null)}>Close</Button>
+          </div>
         </DialogContent>
       </Dialog>
       {/* Delete Confirmation */}
@@ -430,7 +430,10 @@ export function CreateProjectSection({
               onClick={() => {
                 if (deleteTaskId) {
                   deleteTask.mutate(deleteTaskId, {
-                    onSuccess: () => toast.success("Task deleted"),
+                    onSuccess: () => {
+                      toast.success("Task deleted");
+                      setSelectedTask(null);
+                    },
                     onError: (err) => toast.error(err.message),
                   });
                 }
