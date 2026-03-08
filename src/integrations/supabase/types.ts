@@ -631,6 +631,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_company_member: {
+        Args: {
+          _company_id: string
+          _target_department?: Database["public"]["Enums"]["department"]
+          _target_role: Database["public"]["Enums"]["app_role"]
+          _target_user_id: string
+        }
+        Returns: undefined
+      }
       close_company_workspace: {
         Args: { _company_id: string }
         Returns: undefined
@@ -664,6 +673,10 @@ export type Database = {
           _project_id: string
         }
         Returns: boolean
+      }
+      remove_company_member: {
+        Args: { _company_id: string; _target_user_id: string }
+        Returns: undefined
       }
       transfer_role_to_member: {
         Args: { _company_id: string; _target_user_id: string }
