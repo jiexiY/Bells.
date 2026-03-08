@@ -221,7 +221,6 @@ export default function ProjectLeadDashboard() {
         title="Individual Tasks"
         description="Create and assign tasks to team leads and members"
         onTaskClick={(task) => setReviewTask(task)}
-        showAllTasks
       />
 
       {/* Project Calendar */}
