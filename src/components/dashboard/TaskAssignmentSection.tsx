@@ -243,6 +243,18 @@ export function TaskAssignmentSection({
                         {new Date(t.due_date).toLocaleDateString()}
                       </p>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm("Delete this task?")) {
+                          deleteTask.mutate(t.id);
+                        }
+                      }}
+                      className="p-1 rounded hover:bg-destructive/10 transition-colors shrink-0"
+                      title="Delete task"
+                    >
+                      <X className="w-4 h-4 text-destructive" />
+                    </button>
                   </div>
                 );
               })}
