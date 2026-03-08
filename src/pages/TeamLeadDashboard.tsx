@@ -38,6 +38,8 @@ export default function TeamLeadDashboard() {
 
   const departmentProjects = projects;
   const departmentTasks = tasks.filter((t) => departmentProjects.some((p) => p.id === t.project_id));
+  // Individual tasks = tasks NOT linked to any project (standalone tasks from Individual Tasks section)
+  const individualTasks = tasks.filter((t) => !t.project_id);
 
   // Map task statuses to tab categories
   const getTaskTabKey = (status: string): string => {
@@ -54,11 +56,11 @@ export default function TeamLeadDashboard() {
     }
   };
 
-  // Combined items (projects + tasks) as a unified type
+  // Combined items (projects + individual tasks) as a unified type
   type StatusItem = { type: "project"; data: typeof departmentProjects[0] } | { type: "task"; data: TaskRow };
   const allItems: StatusItem[] = [
     ...departmentProjects.map(p => ({ type: "project" as const, data: p })),
-    ...departmentTasks.map(t => ({ type: "task" as const, data: t })),
+    ...individualTasks.map(t => ({ type: "task" as const, data: t })),
   ];
 
   const getItemTabKey = (item: StatusItem) =>
