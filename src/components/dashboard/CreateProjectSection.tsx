@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, FolderPlus, UserPlus, ChevronDown, ChevronRight, ListTodo } from "lucide-react";
+import { Plus, FolderPlus, UserPlus, ChevronDown, ChevronRight, ListTodo, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProjects, useCreateProject } from "@/hooks/useProjects";
-import { useTasks, useCreateTask } from "@/hooks/useTasks";
+import { useTasks, useCreateTask, useDeleteTask } from "@/hooks/useTasks";
 import { useMembers } from "@/hooks/useMembers";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ export function CreateProjectSection({
   const { user, profileName } = useAuth();
   const createProject = useCreateProject();
   const createTask = useCreateTask();
+  const deleteTask = useDeleteTask();
   const { data: projects = [] } = useProjects();
   const { data: tasks = [] } = useTasks();
   const { data: members = [] } = useMembers();
@@ -274,8 +275,23 @@ export function CreateProjectSection({
                                     <span className="text-[10px] text-muted-foreground">{task.assignee_name}</span>
                                   )}
                                 </div>
-                                <span className="ml-auto shrink-0">
+                                <span className="ml-auto shrink-0 flex items-center gap-1.5">
                                   <StatusBadge status={task.status as TaskStatus} type="task" />
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (confirm("Delete this task?")) {
+                                        deleteTask.mutate(task.id, {
+                                          onSuccess: () => toast.success("Task deleted"),
+                                          onError: (err) => toast.error(err.message),
+                                        });
+                                      }
+                                    }}
+                                    className="p-0.5 rounded hover:bg-destructive/10 transition-colors"
+                                    title="Delete task"
+                                  >
+                                    <X className="w-3.5 h-3.5 text-destructive" />
+                                  </button>
                                 </span>
                               </div>
                             ))}
