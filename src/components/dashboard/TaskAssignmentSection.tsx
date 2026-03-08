@@ -55,10 +55,9 @@ export function TaskAssignmentSection({
     dueDate: "",
   });
 
-  // Show tasks relevant to the listed projects, standalone tasks, or tasks created by current user
-  const projectIds = new Set(projects.map((p) => p.id));
+  // Only show standalone tasks (no project) created by or assigned to current user
   const recentTasks = allTasks
-    .filter((t) => !t.project_id || projectIds.has(t.project_id) || t.assigned_by === user?.id)
+    .filter((t) => !t.project_id && (t.assigned_by === user?.id || t.assigned_to === user?.id))
     ;
 
   // Two-step flow: create unassigned task first, then assign
