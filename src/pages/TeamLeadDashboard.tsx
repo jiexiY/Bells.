@@ -101,9 +101,6 @@ export default function TeamLeadDashboard() {
       </div>
 
 
-      {/* Projects Section */}
-      <CreateProjectSection title="Projects" description="Manage your department's projects" />
-
       {/* Task Assignment Section */}
       <TaskAssignmentSection
         projects={departmentProjects.map(p => ({ id: p.id, name: p.name }))}
@@ -112,6 +109,9 @@ export default function TeamLeadDashboard() {
         description="Create and assign tasks to your team members"
         onTaskClick={(task) => setReviewTask(task)}
       />
+
+      {/* Projects Section */}
+      <CreateProjectSection title="Projects" description="Manage your department's projects" />
 
       {/* Project Status Tabs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
