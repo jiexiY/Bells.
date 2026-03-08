@@ -1,8 +1,9 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { ProjectTaskStatusCard } from "@/components/dashboard/ProjectTaskStatusCard";
+import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
+import { ProjectStatusTracker } from "@/components/dashboard/ProjectStatusTracker";
 import { ReviewTaskDialog } from "@/components/dashboard/ReviewTaskDialog";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
@@ -16,12 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
-
+import { cn } from "@/lib/utils";
 
 export default function ProjectLeadDashboard() {
   const { data: projects = [], isLoading } = useProjects();
   const { data: tasks = [] } = useTasks();
   const updateProject = useUpdateProject();
+  const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [codeCopied, setCodeCopied] = useState(false);
@@ -55,7 +57,38 @@ export default function ProjectLeadDashboard() {
     }
   };
 
-  const filteredList = projects.filter(p =>
+  const toProject = (p: typeof projects[0]) => ({
+    id: p.id,
+    name: p.name,
+    description: p.description || "",
+    status: p.status as any,
+    progress: p.progress,
+    leadId: p.lead_id || "",
+    leadName: p.lead_name || "",
+    department: p.department,
+    createdAt: p.created_at,
+    dueDate: p.due_date,
+  });
+
+  const tabs = [
+    { key: "all", label: "All", count: projects.length },
+    { key: "assigned", label: "Assigned", count: assignedProjects.length },
+    { key: "in_progress", label: "In Progress", count: inProgressProjects.length },
+    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalProjects.length },
+    { key: "complete", label: "Completed", count: completeProjects.length },
+  ];
+
+  const getActiveList = () => {
+    switch (activeTab) {
+      case "assigned": return assignedProjects;
+      case "in_progress": return inProgressProjects;
+      case "pending_approval": return pendingApprovalProjects;
+      case "complete": return completeProjects;
+      default: return projects;
+    }
+  };
+
+  const filteredList = getActiveList().filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.description || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -107,6 +140,9 @@ export default function ProjectLeadDashboard() {
       {/* Create Project Section */}
       <CreateProjectSection />
 
+      {/* Project Status Tracker */}
+      <ProjectStatusTracker projects={projects} />
+
       {/* Task Assignment Section */}
       <TaskAssignmentSection
         projects={projects.map(p => ({ id: p.id, name: p.name }))}
@@ -116,15 +152,34 @@ export default function ProjectLeadDashboard() {
         onTaskClick={(task) => setReviewTask(task)}
       />
 
-      {/* Per-Project Status Tracker Cards */}
-      <h2 className="text-lg font-semibold text-foreground mb-4">All Projects</h2>
+      {/* Tabs */}
+      <div className="flex items-center gap-1 border-b border-border mb-6 overflow-x-auto">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={cn(
+              "px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap",
+              activeTab === tab.key
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {tab.label} ({tab.count})
+            {activeTab === tab.key && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Project Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {filteredList.map((p) => (
-          <ProjectTaskStatusCard
+          <ProjectCard
             key={p.id}
-            project={p}
-            tasks={tasks.filter(t => t.project_id === p.id)}
-            showFeedbackActions
+            project={toProject(p)}
+            showFeedbackActions={p.status === "pending_approval"}
             onFeedback={handleFeedback}
           />
         ))}
