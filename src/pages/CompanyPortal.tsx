@@ -190,14 +190,35 @@ export default function CompanyPortal() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="gap-1"
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1"
                         disabled={respondInvite.isPending}
-                        onClick={() => respondInvite.mutate({ invitation: inv, accept: false }, { onSuccess: () => toast.info("Invitation declined") })}>
+                        onClick={() =>
+                          respondInvite.mutate(
+                            { invitation: inv, accept: false },
+                            {
+                              onSuccess: () => toast.info("Invitation declined"),
+                              onError: (err: any) => toast.error(err?.message || "Failed to decline invitation"),
+                            }
+                          )}
+                      >
                         <X className="h-3.5 w-3.5" /> Decline
                       </Button>
-                      <Button size="sm" className="gap-1"
+                      <Button
+                        size="sm"
+                        className="gap-1"
                         disabled={respondInvite.isPending}
-                        onClick={() => respondInvite.mutate({ invitation: inv, accept: true }, { onSuccess: () => toast.success("Invitation accepted!") })}>
+                        onClick={() =>
+                          respondInvite.mutate(
+                            { invitation: inv, accept: true },
+                            {
+                              onSuccess: () => toast.success("Invitation accepted!"),
+                              onError: (err: any) => toast.error(err?.message || "Failed to accept invitation"),
+                            }
+                          )}
+                      >
                         <Check className="h-3.5 w-3.5" /> Accept
                       </Button>
                     </div>

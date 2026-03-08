@@ -118,7 +118,6 @@ export function useSendInvitation() {
 
 export function useRespondInvitation() {
   const qc = useQueryClient();
-  const { user } = useAuth();
   return useMutation({
     mutationFn: async ({
       invitation,
@@ -127,46 +126,18 @@ export function useRespondInvitation() {
       invitation: InvitationRow;
       accept: boolean;
     }) => {
-      // Update invitation status
-      const { error: updateErr } = await supabase
-        .from("invitations")
-        .update({
-          status: accept ? "accepted" : "declined",
-          responded_at: new Date().toISOString(),
-        })
-        .eq("id", invitation.id);
-      if (updateErr) throw updateErr;
+      const { data, error } = await supabase.functions.invoke("respond-invitation", {
+        body: { invitation_id: invitation.id, accept },
+      });
 
-      // If accepted, create company membership
-      if (accept) {
-        const { error: memberErr } = await supabase
-          .from("company_memberships")
-          .insert({
-            user_id: user!.id,
-            company_id: invitation.company_id,
-            role: invitation.role,
-            department: invitation.department,
-          });
-        if (memberErr) throw memberErr;
-
-        // Also update user_roles to ensure proper authentication
-        const { error: roleErr } = await supabase
-          .from("user_roles")
-          .upsert(
-            {
-              user_id: user!.id,
-              role: invitation.role,
-              department: invitation.department,
-            },
-            { onConflict: "user_id" }
-          );
-        if (roleErr) throw roleErr;
-      }
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invitations"] });
       qc.invalidateQueries({ queryKey: ["companies"] });
       qc.invalidateQueries({ queryKey: ["company_memberships"] });
+      qc.invalidateQueries({ queryKey: ["user_roles"] });
     },
   });
 }
