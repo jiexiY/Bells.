@@ -100,8 +100,6 @@ export default function TeamLeadDashboard() {
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={CheckCircle2} />
       </div>
 
-      {/* Project Status Tracker */}
-      <ProjectStatusTracker projects={departmentProjects} />
 
       {/* Create Project Section */}
       <CreateProjectSection />
