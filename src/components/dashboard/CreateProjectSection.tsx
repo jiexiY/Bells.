@@ -21,6 +21,7 @@ import type { TaskStatus } from "@/types/project";
 interface CreateProjectSectionProps {
   title?: string;
   description?: string;
+  statusFilter?: string;
 }
 
 export function CreateProjectSection({
