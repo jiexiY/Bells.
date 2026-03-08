@@ -80,9 +80,6 @@ export default function TeamLeadDashboard() {
 
   return (
     <DashboardLayout title="Team Lead Dashboard" subtitle={`${(dept || "").charAt(0).toUpperCase() + (dept || "").slice(1)} Department`}>
-      {/* Project Status Tracker */}
-      <ProjectStatusTracker projects={departmentProjects} />
-
       {/* Search bar */}
       <div className="mb-6">
         <div className="relative w-full max-w-sm">
@@ -103,6 +100,9 @@ export default function TeamLeadDashboard() {
         <StatsCard title="Team Members" value={members.length} icon={Users} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={CheckCircle2} />
       </div>
+
+      {/* Project Status Tracker */}
+      <ProjectStatusTracker projects={departmentProjects} />
 
       {/* Create Project Section */}
       <CreateProjectSection />
