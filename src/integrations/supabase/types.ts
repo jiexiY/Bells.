@@ -468,6 +468,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          company_id: string | null
           created_at: string
           department: Database["public"]["Enums"]["department"]
           description: string | null
@@ -480,6 +481,7 @@ export type Database = {
           status: Database["public"]["Enums"]["project_status"]
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           department: Database["public"]["Enums"]["department"]
           description?: string | null
@@ -492,6 +494,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["project_status"]
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           department?: Database["public"]["Enums"]["department"]
           description?: string | null
@@ -503,7 +506,15 @@ export type Database = {
           progress?: number
           status?: Database["public"]["Enums"]["project_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task_submissions: {
         Row: {
@@ -554,6 +565,7 @@ export type Database = {
           assigned_by: string | null
           assigned_to: string | null
           assignee_name: string | null
+          company_id: string | null
           created_at: string
           description: string | null
           due_date: string
@@ -569,6 +581,7 @@ export type Database = {
           assigned_by?: string | null
           assigned_to?: string | null
           assignee_name?: string | null
+          company_id?: string | null
           created_at?: string
           description?: string | null
           due_date: string
@@ -584,6 +597,7 @@ export type Database = {
           assigned_by?: string | null
           assigned_to?: string | null
           assignee_name?: string | null
+          company_id?: string | null
           created_at?: string
           description?: string | null
           due_date?: string
@@ -596,6 +610,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_project_id_fkey"
             columns: ["project_id"]
