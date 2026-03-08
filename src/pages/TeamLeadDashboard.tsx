@@ -146,7 +146,14 @@ export default function TeamLeadDashboard() {
           return (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => {
+                if (activeTab === tab.key) {
+                  setShowCards(!showCards);
+                } else {
+                  setActiveTab(tab.key);
+                  setShowCards(true);
+                }
+              }}
               className={cn(
                 "flex items-center gap-2 p-2 rounded-lg transition-colors border",
                 activeTab === tab.key
