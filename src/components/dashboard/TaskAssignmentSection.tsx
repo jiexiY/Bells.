@@ -32,6 +32,7 @@ interface TaskAssignmentSectionProps {
   title?: string;
   description?: string;
   onTaskClick?: (task: any) => void;
+  showAllTasks?: boolean;
 }
 
 export function TaskAssignmentSection({
@@ -40,6 +41,7 @@ export function TaskAssignmentSection({
   title = "Assign Individual Task",
   description = "Create and assign individual tasks to team members",
   onTaskClick,
+  showAllTasks = false,
 }: TaskAssignmentSectionProps) {
   const { user } = useAuth();
   const createTask = useCreateTask();
@@ -53,9 +55,9 @@ export function TaskAssignmentSection({
     dueDate: "",
   });
 
-  // Only show standalone tasks (no project) created by or assigned to current user
+  // Show standalone tasks: all for project leads, or only user's own
   const recentTasks = allTasks
-    .filter((t) => !t.project_id && (t.assigned_by === user?.id || t.assigned_to === user?.id))
+    .filter((t) => !t.project_id && (showAllTasks || t.assigned_by === user?.id || t.assigned_to === user?.id))
     ;
 
   // Two-step flow: create unassigned task first, then assign
