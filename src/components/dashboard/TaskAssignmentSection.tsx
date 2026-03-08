@@ -248,9 +248,7 @@ export function TaskAssignmentSection({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm("Delete this task?")) {
-                          deleteTask.mutate(t.id);
-                        }
+                        setDeleteTaskId(t.id);
                       }}
                       className="p-1 rounded hover:bg-destructive/10 transition-colors shrink-0"
                       title="Delete task"
