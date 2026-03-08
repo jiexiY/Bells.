@@ -36,6 +36,7 @@ export default function CompanyPortal() {
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
   const [newDepartment, setNewDepartment] = useState<string>("");
+  const [deleteCompanyId, setDeleteCompanyId] = useState<string | null>(null);
 
   const handleJoinWorkspace = async () => {
     if (!inviteCode.trim()) return;
