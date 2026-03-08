@@ -136,7 +136,10 @@ export default function CompanyPortal() {
             return (
               <Card
                 key={company.id}
-                className="cursor-pointer hover:shadow-md transition-shadow group"
+                className={cn(
+                  "cursor-pointer hover:shadow-md transition-shadow group",
+                  activeCompanyId === company.id && "ring-2 ring-primary border-primary"
+                )}
                 onClick={() => handleEnter(company.id)}
               >
                 <CardContent className="flex items-center justify-between p-5">
