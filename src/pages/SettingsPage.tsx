@@ -132,6 +132,12 @@ export default function SettingsPage() {
   const [leavingWsId, setLeavingWsId] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
 
+  // Add Member
+  const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false);
+  const [addMemberWsId, setAddMemberWsId] = useState<string | null>(null);
+  const [addMemberEmail, setAddMemberEmail] = useState("");
+  const [addMemberRole, setAddMemberRole] = useState<"team_lead" | "member">("member");
+
   useEffect(() => {
     if (!user) return;
     supabase
