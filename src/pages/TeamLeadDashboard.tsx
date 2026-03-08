@@ -101,15 +101,15 @@ export default function TeamLeadDashboard() {
       </div>
 
 
-      {/* Create Project Section */}
-      <CreateProjectSection />
+      {/* Projects Section */}
+      <CreateProjectSection title="Projects" description="Manage your department's projects" />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection
         projects={departmentProjects.map(p => ({ id: p.id, name: p.name }))}
         assignees={members.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
-        title="Assign Individual Task"
-        description="Create and assign individual tasks to your team members"
+        title="Tasks"
+        description="Create and assign tasks to your team members"
         onTaskClick={(task) => setReviewTask(task)}
       />
 
