@@ -171,8 +171,8 @@ export default function TeamLeadDashboard() {
         })}
       </div>
 
-      {/* Cards for projects and tasks - only show when a specific tab is selected */}
-      {activeTab !== "all" && (
+      {/* Cards for projects and tasks - toggle visibility on tab click */}
+      {showCards && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
           {filteredItems.map((item) => {
             if (item.type === "project") {
