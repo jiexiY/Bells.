@@ -26,7 +26,7 @@ export default function CompanyPortal() {
   const deleteCompany = useDeleteCompany();
   const { data: pendingInvites = [] } = useMyInvitations();
   const respondInvite = useRespondInvitation();
-  const { setActiveCompanyId } = useCompany();
+  const { activeCompanyId, setActiveCompanyId } = useCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
