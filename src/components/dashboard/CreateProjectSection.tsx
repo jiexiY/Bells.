@@ -21,11 +21,13 @@ import type { TaskStatus } from "@/types/project";
 interface CreateProjectSectionProps {
   title?: string;
   description?: string;
+  statusFilter?: string;
 }
 
 export function CreateProjectSection({
   title = "Create Project",
   description = "Create a new project for your team",
+  statusFilter,
 }: CreateProjectSectionProps) {
   const { user, profileName } = useAuth();
   const createProject = useCreateProject();
@@ -112,7 +114,10 @@ export function CreateProjectSection({
     setExpandedProjectId((prev) => (prev === projectId ? null : projectId));
   };
 
-  const hasProjects = projects.length > 0;
+  const filteredProjects = statusFilter && statusFilter !== "all"
+    ? projects.filter(p => p.status === statusFilter)
+    : projects;
+  const hasProjects = filteredProjects.length > 0;
 
   return (
     <Card className="mb-8">
@@ -191,7 +196,7 @@ export function CreateProjectSection({
           </p>
         ) : (
           <div className="space-y-2">
-            {projects.map((project) => {
+            {filteredProjects.map((project) => {
               const projectTasks = tasks.filter((t) => t.project_id === project.id);
               const isExpanded = expandedProjectId === project.id;
 

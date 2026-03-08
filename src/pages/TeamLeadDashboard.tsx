@@ -134,7 +134,7 @@ export default function TeamLeadDashboard() {
       </div>
 
       {/* Projects Section */}
-      <CreateProjectSection title="Projects" description="Manage your department's projects" />
+      <CreateProjectSection title="Projects" description="Manage your department's projects" statusFilter={activeTab} />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection
