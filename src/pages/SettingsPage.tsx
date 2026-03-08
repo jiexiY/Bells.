@@ -754,6 +754,20 @@ export default function SettingsPage() {
                               variant="ghost"
                               size="sm"
                               className="h-8 px-2 text-xs"
+                              onClick={() => {
+                                setAddMemberWsId(m.company_id);
+                                setAddMemberEmail("");
+                                setAddMemberRole("member");
+                                setAddMemberDialogOpen(true);
+                              }}
+                            >
+                              <UserPlus className="h-3.5 w-3.5 mr-1" />
+                              Add
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-xs"
                               onClick={async () => {
                                 setTransferringWsId(m.company_id);
                                 await loadWorkspaceMembers(m.company_id);
