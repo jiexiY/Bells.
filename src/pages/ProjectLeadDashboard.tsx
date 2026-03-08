@@ -92,6 +92,7 @@ export default function ProjectLeadDashboard() {
     { key: "assigned", label: "Assigned", count: assignedProjects.length },
     { key: "in_progress", label: "In Progress", count: inProgressProjects.length },
     { key: "pending_approval", label: "Pending Approval", count: pendingApprovalProjects.length },
+    { key: "need_revision", label: "Need Revision", count: needRevisionProjects.length },
     { key: "complete", label: "Completed", count: completeProjects.length },
   ];
 
