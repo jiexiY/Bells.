@@ -320,6 +320,30 @@ export default function CompanyPortal() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Rename Dialog */}
+        <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Rename Organization</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-2">
+              <Label>New Name</Label>
+              <Input
+                value={renameName}
+                onChange={e => setRenameName(e.target.value)}
+                placeholder="Organization name"
+                onKeyDown={e => e.key === "Enter" && handleRename()}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRenameDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleRename} disabled={renaming || !renameName.trim()}>
+                {renaming ? "Renaming..." : "Rename"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
