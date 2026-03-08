@@ -35,6 +35,8 @@ import {
   XCircle,
   ArrowRightLeft,
   LogOut,
+  UserPlus,
+  Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +95,7 @@ export default function SettingsPage() {
   const { data: companies = [] } = useCompanies();
   const { data: memberships = [] } = useCompanyMemberships();
   const createCompany = useCreateCompany();
+  const [sendingInvite, setSendingInvite] = useState(false);
 
   const [activeTab, setActiveTab] = useState("profile");
   const [saving, setSaving] = useState(false);
@@ -127,6 +130,12 @@ export default function SettingsPage() {
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [leavingWsId, setLeavingWsId] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
+
+  // Add Member
+  const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false);
+  const [addMemberWsId, setAddMemberWsId] = useState<string | null>(null);
+  const [addMemberEmail, setAddMemberEmail] = useState("");
+  const [addMemberRole, setAddMemberRole] = useState<"team_lead" | "member">("member");
 
   useEffect(() => {
     if (!user) return;
@@ -744,6 +753,20 @@ export default function SettingsPage() {
                               variant="ghost"
                               size="sm"
                               className="h-8 px-2 text-xs"
+                              onClick={() => {
+                                setAddMemberWsId(m.company_id);
+                                setAddMemberEmail("");
+                                setAddMemberRole("member");
+                                setAddMemberDialogOpen(true);
+                              }}
+                            >
+                              <UserPlus className="h-3.5 w-3.5 mr-1" />
+                              Add
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-xs"
                               onClick={async () => {
                                 setTransferringWsId(m.company_id);
                                 await loadWorkspaceMembers(m.company_id);
@@ -880,6 +903,115 @@ export default function SettingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add Member Dialog */}
+      <Dialog open={addMemberDialogOpen} onOpenChange={setAddMemberDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add member</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {/* Copy Invite Link */}
+            <div className="space-y-2">
+              <Label>Invite link</Label>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={(() => {
+                    const company = companies.find((c) => c.id === addMemberWsId);
+                    return company ? `Invite code: ${company.invite_code}` : "";
+                  })()}
+                  className="text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => {
+                    const company = companies.find((c) => c.id === addMemberWsId);
+                    if (company) {
+                      navigator.clipboard.writeText(company.invite_code);
+                      toast({ title: "Copied", description: "Invite code copied to clipboard." });
+                    }
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Share this code so they can join via the portal.</p>
+            </div>
+
+            <div className="relative">
+              <Separator />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">or</span>
+            </div>
+
+            {/* Send Email Invite */}
+            <div className="space-y-2">
+              <Label>Email address</Label>
+              <Input
+                type="email"
+                placeholder="colleague@company.com"
+                value={addMemberEmail}
+                onChange={(e) => setAddMemberEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Select value={addMemberRole} onValueChange={(v: any) => setAddMemberRole(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="team_lead">Team Lead</SelectItem>
+                  <SelectItem value="member">Member</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddMemberDialogOpen(false)}>Cancel</Button>
+            <Button
+              disabled={!addMemberEmail.trim() || sendingInvite}
+              onClick={async () => {
+                if (!addMemberWsId || !addMemberEmail.trim() || !user) return;
+                setSendingInvite(true);
+                try {
+                  const { error } = await supabase.from("invitations").insert({
+                    company_id: addMemberWsId,
+                    email: addMemberEmail.trim(),
+                    role: addMemberRole,
+                    invited_by: user.id,
+                  });
+                  if (error) throw error;
+
+                  // Get company name for email
+                  let companyName = "the organization";
+                  try {
+                    const { data: company } = await supabase.from("companies").select("name").eq("id", addMemberWsId).single();
+                    if (company) companyName = company.name;
+                  } catch {}
+
+                  // Fire-and-forget email
+                  try {
+                    await supabase.functions.invoke("send-invite-email", {
+                      body: { email: addMemberEmail.trim(), companyName, inviterName: profile.name, role: addMemberRole },
+                    });
+                  } catch {}
+
+                  toast({ title: "Invitation sent", description: `Invite sent to ${addMemberEmail}` });
+                  setAddMemberDialogOpen(false);
+                  setAddMemberEmail("");
+                } catch (err: any) {
+                  toast({ title: "Error", description: err.message || "Failed to send invitation.", variant: "destructive" });
+                } finally {
+                  setSendingInvite(false);
+                }
+              }}
+            >
+              {sendingInvite ? "Sending..." : "Send invite"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
