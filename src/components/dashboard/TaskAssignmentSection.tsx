@@ -32,6 +32,7 @@ interface TaskAssignmentSectionProps {
   title?: string;
   description?: string;
   onTaskClick?: (task: any) => void;
+  showAllTasks?: boolean;
 }
 
 export function TaskAssignmentSection({
