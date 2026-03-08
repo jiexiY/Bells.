@@ -33,6 +33,8 @@ import {
   Plus,
   Circle,
   XCircle,
+  ArrowRightLeft,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -113,6 +115,18 @@ export default function SettingsPage() {
   const [closeWsDialogOpen, setCloseWsDialogOpen] = useState(false);
   const [closingWsId, setClosingWsId] = useState<string | null>(null);
   const [closingWs, setClosingWs] = useState(false);
+  
+  // Transfer Role
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [transferringWsId, setTransferringWsId] = useState<string | null>(null);
+  const [transferTargetUserId, setTransferTargetUserId] = useState<string>("");
+  const [transferring, setTransferring] = useState(false);
+  const [workspaceMembers, setWorkspaceMembers] = useState<Array<{ user_id: string; name: string; email: string; role: string }>>([]);
+  
+  // Leave Workspace
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [leavingWsId, setLeavingWsId] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -210,6 +224,74 @@ export default function SettingsPage() {
       toast({ title: "Workspace closed", description: "The workspace has been deactivated for all members." });
       setCloseWsDialogOpen(false);
       setClosingWsId(null);
+      window.location.reload();
+    }
+  };
+
+  const loadWorkspaceMembers = async (companyId: string) => {
+    // Get all memberships for this company
+    const { data: allMemberships } = await supabase
+      .from("company_memberships")
+      .select("user_id, role")
+      .eq("company_id", companyId)
+      .eq("is_active", true);
+    
+    if (!allMemberships) return;
+    
+    // Get profiles for these users
+    const userIds = allMemberships.map(m => m.user_id);
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, name, email")
+      .in("user_id", userIds);
+    
+    const members = allMemberships
+      .filter(m => m.user_id !== user?.id) // Exclude current user
+      .map(m => {
+        const profile = profiles?.find(p => p.user_id === m.user_id);
+        return {
+          user_id: m.user_id,
+          name: profile?.name || "Unknown",
+          email: profile?.email || "",
+          role: m.role,
+        };
+      });
+    
+    setWorkspaceMembers(members);
+  };
+
+  const handleTransferRole = async () => {
+    if (!transferringWsId || !transferTargetUserId) return;
+    setTransferring(true);
+    const { error } = await supabase.rpc("transfer_role_to_member", {
+      _company_id: transferringWsId,
+      _target_user_id: transferTargetUserId,
+    });
+    setTransferring(false);
+    if (error) {
+      toast({ title: "Error", description: error.message || "Failed to transfer role.", variant: "destructive" });
+    } else {
+      toast({ title: "Role transferred", description: "Your role has been transferred successfully." });
+      setTransferDialogOpen(false);
+      setTransferringWsId(null);
+      setTransferTargetUserId("");
+      window.location.reload();
+    }
+  };
+
+  const handleLeaveWorkspace = async () => {
+    if (!leavingWsId) return;
+    setLeaving(true);
+    const { error } = await supabase.rpc("leave_workspace", {
+      _company_id: leavingWsId,
+    });
+    setLeaving(false);
+    if (error) {
+      toast({ title: "Error", description: error.message || "Failed to leave workspace.", variant: "destructive" });
+    } else {
+      toast({ title: "Left workspace", description: "You have left the workspace." });
+      setLeaveDialogOpen(false);
+      setLeavingWsId(null);
       window.location.reload();
     }
   };
@@ -652,23 +734,52 @@ export default function SettingsPage() {
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "text-xs font-medium px-2.5 py-1 rounded-full",
-                          m.is_active ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
+                          m.is_active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                         )}>
                           {m.is_active ? "Active" : "Inactive"}
                         </span>
-                        {isProjectLead && m.is_active && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
-                            onClick={() => {
-                              setClosingWsId(m.company_id);
-                              setCloseWsDialogOpen(true);
-                            }}
-                          >
-                            <XCircle className="h-3.5 w-3.5 mr-1" />
-                            Close
-                          </Button>
+                        {m.is_active && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-xs"
+                              onClick={async () => {
+                                setTransferringWsId(m.company_id);
+                                await loadWorkspaceMembers(m.company_id);
+                                setTransferDialogOpen(true);
+                              }}
+                            >
+                              <ArrowRightLeft className="h-3.5 w-3.5 mr-1" />
+                              Transfer
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
+                              onClick={() => {
+                                setLeavingWsId(m.company_id);
+                                setLeaveDialogOpen(true);
+                              }}
+                            >
+                              <LogOut className="h-3.5 w-3.5 mr-1" />
+                              Leave
+                            </Button>
+                            {isProjectLead && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
+                                onClick={() => {
+                                  setClosingWsId(m.company_id);
+                                  setCloseWsDialogOpen(true);
+                                }}
+                              >
+                                <XCircle className="h-3.5 w-3.5 mr-1" />
+                                Close
+                              </Button>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -697,6 +808,74 @@ export default function SettingsPage() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {closingWs ? "Closing..." : "Close workspace"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Transfer Role Dialog */}
+      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Transfer your role</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Select a workspace member to transfer your role to. You will be downgraded to a member role.
+            </p>
+            <div className="space-y-2">
+              <Label>Select member</Label>
+              <Select value={transferTargetUserId} onValueChange={setTransferTargetUserId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a member..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {workspaceMembers.length === 0 ? (
+                    <SelectItem value="none" disabled>No other members available</SelectItem>
+                  ) : (
+                    workspaceMembers.map((member) => (
+                      <SelectItem key={member.user_id} value={member.user_id}>
+                        {member.name} ({member.email}) - {member.role.replace("_", " ")}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setTransferDialogOpen(false);
+              setTransferringWsId(null);
+              setTransferTargetUserId("");
+            }}>Cancel</Button>
+            <Button 
+              onClick={handleTransferRole} 
+              disabled={transferring || !transferTargetUserId || workspaceMembers.length === 0}
+            >
+              {transferring ? "Transferring..." : "Transfer role"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Leave Workspace Confirmation */}
+      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave this workspace?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will no longer have access to this workspace. If you are a project lead, you must transfer your role first unless there is another project lead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setLeavingWsId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLeaveWorkspace}
+              disabled={leaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {leaving ? "Leaving..." : "Leave workspace"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
