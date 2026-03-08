@@ -36,8 +36,8 @@ interface TaskAssignmentSectionProps {
 export function TaskAssignmentSection({
   projects,
   assignees,
-  title = "Assign Tasks",
-  description = "Create and assign tasks to team members",
+  title = "Assign Individual Task",
+  description = "Create and assign individual tasks to team members",
   onTaskClick,
 }: TaskAssignmentSectionProps) {
   const { user } = useAuth();
