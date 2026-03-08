@@ -46,6 +46,7 @@ export default function ProjectLeadDashboard() {
   const assignedProjects = projects.filter((p) => p.status === "assigned");
   const inProgressProjects = projects.filter((p) => p.status === "in_progress");
   const pendingApprovalProjects = projects.filter((p) => p.status === "pending_approval");
+  const needRevisionProjects = projects.filter((p) => p.status === "need_revision");
   const completeProjects = projects.filter((p) => p.status === "complete");
   const getStatusWeight = (status: string) => {
     switch (status) {
