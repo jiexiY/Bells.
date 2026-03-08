@@ -430,7 +430,10 @@ export function CreateProjectSection({
               onClick={() => {
                 if (deleteTaskId) {
                   deleteTask.mutate(deleteTaskId, {
-                    onSuccess: () => toast.success("Task deleted"),
+                    onSuccess: () => {
+                      toast.success("Task deleted");
+                      setSelectedTask(null);
+                    },
                     onError: (err) => toast.error(err.message),
                   });
                 }
