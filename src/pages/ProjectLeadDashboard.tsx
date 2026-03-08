@@ -147,8 +147,8 @@ export default function ProjectLeadDashboard() {
       <TaskAssignmentSection
         projects={projects.map(p => ({ id: p.id, name: p.name }))}
         assignees={teamLeadsAndMembers.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
-        title="Assign Tasks"
-        description="Create and assign tasks to team leads and members"
+        title="Assign Individual Task"
+        description="Create and assign individual tasks to team leads and members"
         onTaskClick={(task) => setReviewTask(task)}
       />
 
