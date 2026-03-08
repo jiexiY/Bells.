@@ -113,6 +113,18 @@ export default function SettingsPage() {
   const [closeWsDialogOpen, setCloseWsDialogOpen] = useState(false);
   const [closingWsId, setClosingWsId] = useState<string | null>(null);
   const [closingWs, setClosingWs] = useState(false);
+  
+  // Transfer Role
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [transferringWsId, setTransferringWsId] = useState<string | null>(null);
+  const [transferTargetUserId, setTransferTargetUserId] = useState<string>("");
+  const [transferring, setTransferring] = useState(false);
+  const [workspaceMembers, setWorkspaceMembers] = useState<Array<{ user_id: string; name: string; email: string; role: string }>>([]);
+  
+  // Leave Workspace
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [leavingWsId, setLeavingWsId] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
