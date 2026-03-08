@@ -38,7 +38,7 @@ import {
   UserPlus,
   Copy,
 } from "lucide-react";
-import { useSendInvitation } from "@/hooks/useInvitations";
+import { cn } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
