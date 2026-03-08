@@ -95,10 +95,8 @@ export default function TeamLeadDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-8">
         <StatsCard title="Department Projects" value={departmentProjects.length} icon={FolderCheck} />
-        <StatsCard title="In Progress" value={inProgressProjects.length} icon={Clock} />
-        <StatsCard title="Team Members" value={members.length} icon={Users} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={CheckCircle2} />
       </div>
 
