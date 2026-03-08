@@ -398,9 +398,20 @@ export function CreateProjectSection({
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedTask(null)}>Close</Button>
-          </DialogFooter>
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 border-destructive/30"
+              onClick={() => {
+                if (selectedTask) setDeleteTaskId(selectedTask.id);
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setSelectedTask(null)}>Close</Button>
+          </div>
         </DialogContent>
       </Dialog>
       {/* Delete Confirmation */}
