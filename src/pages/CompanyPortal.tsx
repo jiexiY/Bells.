@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCompanies, useCompanyMemberships, useCreateCompany } from "@/hooks/useCompanies";
+import { useCompanies, useCompanyMemberships, useCreateCompany, useDeleteCompany } from "@/hooks/useCompanies";
 import { useUnreadCountByCompany } from "@/hooks/useNotifications";
 import { useMyInvitations, useRespondInvitation } from "@/hooks/useInvitations";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Building2, Plus, ArrowRight, Mail, Check, X, KeyRound } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Building2, Plus, ArrowRight, Mail, Check, X, KeyRound, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -22,9 +23,10 @@ export default function CompanyPortal() {
   const { data: memberships = [] } = useCompanyMemberships();
   const unreadCounts = useUnreadCountByCompany();
   const createCompany = useCreateCompany();
+  const deleteCompany = useDeleteCompany();
   const { data: pendingInvites = [] } = useMyInvitations();
   const respondInvite = useRespondInvitation();
-  const { setActiveCompanyId } = useCompany();
+  const { activeCompanyId, setActiveCompanyId } = useCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
@@ -34,6 +36,7 @@ export default function CompanyPortal() {
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
   const [newDepartment, setNewDepartment] = useState<string>("");
+  const [deleteCompanyId, setDeleteCompanyId] = useState<string | null>(null);
 
   const handleJoinWorkspace = async () => {
     if (!inviteCode.trim()) return;
@@ -139,7 +142,22 @@ export default function CompanyPortal() {
                       )}
                     </div>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <div className="flex items-center gap-2">
+                    {membership?.role === "project_lead" && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteCompanyId(company.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
                 </CardContent>
               </Card>
             );
@@ -280,6 +298,40 @@ export default function CompanyPortal() {
           </Dialog>
         </div>
       </div>
+
+      {/* Delete Organization Confirmation */}
+      <AlertDialog open={!!deleteCompanyId} onOpenChange={(open) => { if (!open) setDeleteCompanyId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Organization</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this organization? This action cannot be undone and will remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteCompanyId) {
+                  deleteCompany.mutate(deleteCompanyId, {
+                    onSuccess: () => {
+                      toast.success("Organization deleted");
+                      if (activeCompanyId === deleteCompanyId) {
+                        setActiveCompanyId(null);
+                      }
+                      setDeleteCompanyId(null);
+                    },
+                    onError: () => toast.error("Failed to delete organization"),
+                  });
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

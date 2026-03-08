@@ -47,6 +47,20 @@ export function useCompanyMemberships() {
   });
 }
 
+export function useDeleteCompany() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (companyId: string) => {
+      const { error } = await supabase.from("companies").delete().eq("id", companyId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["companies"] });
+      qc.invalidateQueries({ queryKey: ["company_memberships"] });
+    },
+  });
+}
+
 export function useCreateCompany() {
   const qc = useQueryClient();
   const { user } = useAuth();
