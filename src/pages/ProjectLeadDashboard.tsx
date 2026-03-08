@@ -46,7 +46,22 @@ export default function ProjectLeadDashboard() {
   const inProgressProjects = projects.filter((p) => p.status === "in_progress");
   const pendingApprovalProjects = projects.filter((p) => p.status === "pending_approval");
   const completeProjects = projects.filter((p) => p.status === "complete");
-  const avgProgress = projects.length ? Math.round(projects.reduce((s, p) => s + p.progress, 0) / projects.length) : 0;
+  const getStatusWeight = (status: string) => {
+    switch (status) {
+      case "complete": case "completed": case "approved": return 100;
+      case "pending_approval": return 75;
+      case "need_revision": return 55;
+      case "in_progress": return 20;
+      default: return 0;
+    }
+  };
+  const totalItems = projects.length + tasks.length;
+  const avgProgress = totalItems > 0
+    ? Math.round(
+        (projects.reduce((s, p) => s + getStatusWeight(p.status), 0) +
+         tasks.reduce((s, t) => s + getStatusWeight(t.status), 0)) / totalItems
+      )
+    : 0;
   const completionRate = projects.length ? Math.round((completeProjects.length / projects.length) * 100) : 0;
 
   const handleFeedback = (projectId: string, feedback: "approved" | "declined", comment: string) => {
