@@ -140,6 +140,9 @@ export default function ProjectLeadDashboard() {
       {/* Project Status Tracker */}
       <ProjectStatusTracker projects={projects} />
 
+      {/* Projects Section */}
+      <CreateProjectSection title="Projects" description="Manage your organization's projects" />
+
       {/* Task Assignment Section */}
       <TaskAssignmentSection
         projects={projects.map(p => ({ id: p.id, name: p.name }))}
@@ -148,9 +151,6 @@ export default function ProjectLeadDashboard() {
         description="Create and assign tasks to team leads and members"
         onTaskClick={(task) => setReviewTask(task)}
       />
-
-      {/* Projects Section */}
-      <CreateProjectSection title="Projects" description="Manage your organization's projects" />
 
       {/* Tabs */}
       <div className="flex items-center gap-1 border-b border-border mb-6 overflow-x-auto">
