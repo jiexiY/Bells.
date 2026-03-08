@@ -141,7 +141,7 @@ export default function ProjectLeadDashboard() {
       <ProjectStatusTracker projects={projects} />
 
       {/* Projects Section */}
-      <CreateProjectSection title="Projects" description="Manage your organization's projects" />
+      <CreateProjectSection title="Projects" description="Manage your organization's projects" statusFilter={activeTab} />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection
