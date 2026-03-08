@@ -644,6 +644,7 @@ export type Database = {
         Args: { _company_id: string }
         Returns: undefined
       }
+      get_user_company_ids: { Args: { _user_id: string }; Returns: string[] }
       get_user_department: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["department"]
@@ -664,6 +665,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_company_member: {
+        Args: { _company_id: string; _user_id: string }
         Returns: boolean
       }
       leave_workspace: { Args: { _company_id: string }; Returns: undefined }
