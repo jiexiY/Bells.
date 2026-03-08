@@ -970,24 +970,44 @@ export default function SettingsPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddMemberDialogOpen(false)}>Cancel</Button>
             <Button
-              disabled={!addMemberEmail.trim() || sendInvitation.isPending}
+              disabled={!addMemberEmail.trim() || sendingInvite}
               onClick={async () => {
-                if (!addMemberWsId || !addMemberEmail.trim()) return;
+                if (!addMemberWsId || !addMemberEmail.trim() || !user) return;
+                setSendingInvite(true);
                 try {
-                  await sendInvitation.mutateAsync({
+                  const { error } = await supabase.from("invitations").insert({
+                    company_id: addMemberWsId,
                     email: addMemberEmail.trim(),
                     role: addMemberRole,
-                    inviterName: profile.name,
+                    invited_by: user.id,
                   });
+                  if (error) throw error;
+
+                  // Get company name for email
+                  let companyName = "the organization";
+                  try {
+                    const { data: company } = await supabase.from("companies").select("name").eq("id", addMemberWsId).single();
+                    if (company) companyName = company.name;
+                  } catch {}
+
+                  // Fire-and-forget email
+                  try {
+                    await supabase.functions.invoke("send-invite-email", {
+                      body: { email: addMemberEmail.trim(), companyName, inviterName: profile.name, role: addMemberRole },
+                    });
+                  } catch {}
+
                   toast({ title: "Invitation sent", description: `Invite sent to ${addMemberEmail}` });
                   setAddMemberDialogOpen(false);
                   setAddMemberEmail("");
                 } catch (err: any) {
                   toast({ title: "Error", description: err.message || "Failed to send invitation.", variant: "destructive" });
+                } finally {
+                  setSendingInvite(false);
                 }
               }}
             >
-              {sendInvitation.isPending ? "Sending..." : "Send invite"}
+              {sendingInvite ? "Sending..." : "Send invite"}
             </Button>
           </DialogFooter>
         </DialogContent>
