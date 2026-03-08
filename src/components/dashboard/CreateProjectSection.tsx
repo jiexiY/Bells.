@@ -196,7 +196,7 @@ export function CreateProjectSection({
           </p>
         ) : (
           <div className="space-y-2">
-            {projects.map((project) => {
+            {filteredProjects.map((project) => {
               const projectTasks = tasks.filter((t) => t.project_id === project.id);
               const isExpanded = expandedProjectId === project.id;
 
