@@ -172,33 +172,40 @@ export function ReviewTaskDialog({ open, onOpenChange, task }: ReviewTaskDialogP
           </div>
         )}
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            className="text-destructive hover:bg-destructive/10 border-destructive/30 mr-auto"
-            onClick={() => setShowDeleteConfirm(true)}
-          >
-            <Trash2 className="w-4 h-4 mr-1" />
-            Delete
-          </Button>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button
-            variant="outline"
-            className="text-destructive hover:bg-destructive/10 border-destructive/30"
-            onClick={() => handleAction("reject")}
-            disabled={updateTask.isPending}
-          >
-            <XCircle className="w-4 h-4 mr-1" />
-            Request Revision
-          </Button>
-          <Button
-            onClick={() => handleAction("approve")}
-            disabled={updateTask.isPending}
-          >
-            {updateTask.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1" />}
-            Approve
-          </Button>
-        </DialogFooter>
+        <div className="flex flex-col gap-3 pt-2">
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 border-destructive/30"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:bg-destructive/10 border-destructive/30"
+                onClick={() => handleAction("reject")}
+                disabled={updateTask.isPending}
+              >
+                <XCircle className="w-4 h-4 mr-1" />
+                Revision
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleAction("approve")}
+                disabled={updateTask.isPending}
+              >
+                {updateTask.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1" />}
+                Approve
+              </Button>
+            </div>
+          </div>
+        </div>
       </DialogContent>
 
       {/* Delete Confirmation */}
