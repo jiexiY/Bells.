@@ -657,12 +657,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      leave_workspace: { Args: { _company_id: string }; Returns: undefined }
       project_has_department: {
         Args: {
           _department: Database["public"]["Enums"]["department"]
           _project_id: string
         }
         Returns: boolean
+      }
+      transfer_role_to_member: {
+        Args: { _company_id: string; _target_user_id: string }
+        Returns: undefined
       }
       user_has_tasks_in_project: {
         Args: { _project_id: string; _user_id: string }
