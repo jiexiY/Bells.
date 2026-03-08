@@ -137,11 +137,11 @@ export default function ProjectLeadDashboard() {
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} />
       </div>
 
-      {/* Create Project Section */}
-      <CreateProjectSection />
-
       {/* Project Status Tracker */}
       <ProjectStatusTracker projects={projects} />
+
+      {/* Create Project Section */}
+      <CreateProjectSection />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection
