@@ -148,6 +148,19 @@ export function useRespondInvitation() {
             department: invitation.department,
           });
         if (memberErr) throw memberErr;
+
+        // Also update user_roles to ensure proper authentication
+        const { error: roleErr } = await supabase
+          .from("user_roles")
+          .upsert(
+            {
+              user_id: user!.id,
+              role: invitation.role,
+              department: invitation.department,
+            },
+            { onConflict: "user_id" }
+          );
+        if (roleErr) throw roleErr;
       }
     },
     onSuccess: () => {
