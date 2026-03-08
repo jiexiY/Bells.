@@ -93,6 +93,9 @@ export default function TeamLeadDashboard() {
         </div>
       </div>
 
+      {/* Project Status Tracker */}
+      <ProjectStatusTracker projects={departmentProjects} />
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <StatsCard title="Department Projects" value={departmentProjects.length} icon={FolderCheck} />
@@ -103,9 +106,6 @@ export default function TeamLeadDashboard() {
 
       {/* Create Project Section */}
       <CreateProjectSection />
-
-      {/* Project Status Tracker */}
-      <ProjectStatusTracker projects={departmentProjects} />
 
       {/* Task Assignment Section */}
       <TaskAssignmentSection
