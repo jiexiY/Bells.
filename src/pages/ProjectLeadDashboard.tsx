@@ -1,5 +1,5 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { ProjectCard } from "@/components/dashboard/ProjectCard";
+import { ProjectTaskStatusCard } from "@/components/dashboard/ProjectTaskStatusCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
