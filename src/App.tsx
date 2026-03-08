@@ -71,9 +71,9 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/companies" element={<ProtectedRoute><CompanyPortal /></ProtectedRoute>} />
                 <Route path="/" element={<RoleRouter />} />
-                <Route path="/project-lead" element={<ProtectedRoute allowedRoles={["project_lead"]}><ProjectLeadDashboard /></ProtectedRoute>} />
-                <Route path="/team-lead" element={<ProtectedRoute allowedRoles={["team_lead"]}><TeamLeadDashboard /></ProtectedRoute>} />
-                <Route path="/member" element={<ProtectedRoute allowedRoles={["member"]}><TeamMemberDashboard /></ProtectedRoute>} />
+                <Route path="/project-lead" element={<ProtectedRoute><ProjectLeadDashboard /></ProtectedRoute>} />
+                <Route path="/team-lead" element={<ProtectedRoute><TeamLeadDashboard /></ProtectedRoute>} />
+                <Route path="/member" element={<ProtectedRoute><TeamMemberDashboard /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

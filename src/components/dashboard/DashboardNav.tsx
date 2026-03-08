@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FileText, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight, UsersRound } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FileText, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight, UsersRound, Eye } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -177,7 +178,28 @@ export function DashboardNav() {
                 {profileName && <p className="text-sm font-medium text-foreground">{profileName}</p>}
                 <p className="text-xs text-muted-foreground capitalize">{activeRole?.replace("_", " ") || "No role"}</p>
               </div>
-              <ThemeToggle />
+              <div className="flex items-center gap-1">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">Switch view</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => navigate("/project-lead")} className={cn(activeRole === "project_lead" && location.pathname === "/project-lead" && "bg-accent")}>
+                      <Briefcase className="h-4 w-4 mr-2" /> Project Lead
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/team-lead")} className={cn(activeRole === "team_lead" && location.pathname === "/team-lead" && "bg-accent")}>
+                      <Users className="h-4 w-4 mr-2" /> Team Lead
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/member")} className={cn(activeRole === "member" && location.pathname === "/member" && "bg-accent")}>
+                      <ClipboardList className="h-4 w-4 mr-2" /> Team Member
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <ThemeToggle />
+              </div>
             </div>
             <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
