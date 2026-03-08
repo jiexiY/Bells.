@@ -133,18 +133,6 @@ export default function TeamLeadDashboard() {
         })}
       </div>
 
-      {/* Projects Section */}
-      <CreateProjectSection title="Projects" description="Manage your department's projects" statusFilter={activeTab} />
-
-      {/* Task Assignment Section */}
-      <TaskAssignmentSection
-        projects={departmentProjects.map(p => ({ id: p.id, name: p.name }))}
-        assignees={members.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
-        title="Individual Tasks"
-        description="Create and assign tasks to your team members"
-        onTaskClick={(task) => setReviewTask(task)}
-      />
-
       {/* Project Cards with task progress */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {filteredList.map((p) => {
@@ -181,6 +169,18 @@ export default function TeamLeadDashboard() {
           <p className="text-muted-foreground col-span-full text-center py-12">No projects found</p>
         )}
       </div>
+
+      {/* Projects Section */}
+      <CreateProjectSection title="Projects" description="Manage your department's projects" statusFilter={activeTab} />
+
+      {/* Task Assignment Section */}
+      <TaskAssignmentSection
+        projects={departmentProjects.map(p => ({ id: p.id, name: p.name }))}
+        assignees={members.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
+        title="Individual Tasks"
+        description="Create and assign tasks to your team members"
+        onTaskClick={(task) => setReviewTask(task)}
+      />
 
       {/* Project Calendar */}
       <Card>
