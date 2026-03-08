@@ -5,6 +5,7 @@ import { useUnreadCountByCompany } from "@/hooks/useNotifications";
 import { useMyInvitations, useRespondInvitation } from "@/hooks/useInvitations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,7 @@ export default function CompanyPortal() {
   const createCompany = useCreateCompany();
   const { data: pendingInvites = [] } = useMyInvitations();
   const respondInvite = useRespondInvitation();
-  const { setActiveCompanyId } = useCompany();
+  const { activeCompanyId, setActiveCompanyId } = useCompany();
   const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -136,7 +137,10 @@ export default function CompanyPortal() {
             return (
               <Card
                 key={company.id}
-                className="cursor-pointer hover:shadow-md transition-shadow group"
+                className={cn(
+                  "cursor-pointer hover:shadow-md transition-shadow group",
+                  activeCompanyId === company.id && "ring-2 ring-primary border-primary"
+                )}
                 onClick={() => handleEnter(company.id)}
               >
                 <CardContent className="flex items-center justify-between p-5">
@@ -152,7 +156,14 @@ export default function CompanyPortal() {
                       )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground">{company.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground">{company.name}</h3>
+                        {activeCompanyId === company.id && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none">
+                            Current
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground capitalize">
                         {membership?.role?.replace("_", " ")} {membership?.department ? `· ${membership.department}` : ""}
                       </p>
