@@ -39,6 +39,7 @@ import {
   Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCompany } from "@/contexts/CompanyContext";
 
 const sidebarItems = [
   { id: "profile", label: "Profile", icon: User },
