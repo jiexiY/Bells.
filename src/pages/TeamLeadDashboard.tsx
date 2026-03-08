@@ -186,16 +186,46 @@ export default function TeamLeadDashboard() {
         )}
       </div>
 
-      {/* Calendar */}
+      {/* Project Calendar */}
       <Card>
         <CardHeader>
-          <CardTitle>Calendar</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <CalendarDays className="w-5 h-5 text-primary" />
+            Project Calendar
+          </CardTitle>
         </CardHeader>
-        <CardContent className="flex justify-center">
-          <Calendar
-            mode="single"
-            className={cn("p-3 pointer-events-auto")}
-          />
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-6">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-lg border border-border"
+            />
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground mb-3">
+                {selectedDate?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+              </h3>
+              {departmentProjects.filter(p => {
+                const due = new Date(p.due_date);
+                return selectedDate && due.toDateString() === selectedDate.toDateString();
+              }).length > 0 ? (
+                <div className="space-y-2">
+                  {departmentProjects.filter(p => {
+                    const due = new Date(p.due_date);
+                    return selectedDate && due.toDateString() === selectedDate.toDateString();
+                  }).map(p => (
+                    <div key={p.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="text-sm font-medium">{p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">No events on this date</p>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
