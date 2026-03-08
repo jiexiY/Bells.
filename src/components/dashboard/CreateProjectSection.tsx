@@ -114,7 +114,10 @@ export function CreateProjectSection({
     setExpandedProjectId((prev) => (prev === projectId ? null : projectId));
   };
 
-  const hasProjects = projects.length > 0;
+  const filteredProjects = statusFilter && statusFilter !== "all"
+    ? projects.filter(p => p.status === statusFilter)
+    : projects;
+  const hasProjects = filteredProjects.length > 0;
 
   return (
     <Card className="mb-8">
