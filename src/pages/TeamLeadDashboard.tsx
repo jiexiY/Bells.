@@ -185,47 +185,18 @@ export default function TeamLeadDashboard() {
         )}
       </div>
 
-      {/* Task Review Section */}
+      {/* Calendar */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ListTodo className="w-5 h-5 text-primary" />
-            Task Review
-          </CardTitle>
+          <CardTitle>Calendar</CardTitle>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="max-h-[500px]">
-            <div className="space-y-3">
-              {departmentTasks.map((t) => (
-                 <div key={t.id}
-                    className={cn(
-                      "flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border",
-                      t.status === "pending_approval" && "cursor-pointer hover:bg-muted/50 transition-colors"
-                    )}
-                    onClick={() => t.status === "pending_approval" && setReviewTask(t)}
-                  >
-                   <div className="flex-1 min-w-0 space-y-1">
-                     <div className="flex items-center gap-2 flex-wrap">
-                       <h4 className="font-medium text-foreground text-sm">{t.title}</h4>
-                       <StatusBadge status={t.status as TaskStatus} type="task" />
-                     </div>
-                     <p className="text-xs text-muted-foreground">{t.assignee_name || "Unassigned"} · Due {new Date(t.due_date).toLocaleDateString()}</p>
-                   </div>
-                   {(t.status === "pending_approval") && (
-                     <div className="flex items-center gap-1 ml-3">
-                       <Button size="sm" variant="outline" className="text-primary hover:bg-primary/10 h-8 px-2"
-                         onClick={(e) => { e.stopPropagation(); setReviewTask(t); }}>
-                         Review
-                       </Button>
-                     </div>
-                   )}
-                 </div>
-               ))}
-               {departmentTasks.length === 0 && <p className="text-muted-foreground text-center py-8 text-sm">No tasks yet.</p>}
-             </div>
-           </ScrollArea>
-         </CardContent>
-       </Card>
+        <CardContent className="flex justify-center">
+          <Calendar
+            mode="single"
+            className={cn("p-3 pointer-events-auto")}
+          />
+        </CardContent>
+      </Card>
 
        {/* Review Dialog */}
        {reviewTask && (
