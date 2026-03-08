@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Plus, ListTodo, UserCheck, X } from "lucide-react";
+import { Plus, ListTodo, UserCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,12 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./StatusBadge";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCreateTask, useTasks, useDeleteTask } from "@/hooks/useTasks";
+import { useCreateTask, useTasks } from "@/hooks/useTasks";
 import type { TaskStatus } from "@/types/project";
 
 interface Assignee {
@@ -43,10 +43,8 @@ export function TaskAssignmentSection({
 }: TaskAssignmentSectionProps) {
   const { user } = useAuth();
   const createTask = useCreateTask();
-  const deleteTask = useDeleteTask();
   const { data: allTasks = [] } = useTasks();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -244,16 +242,6 @@ export function TaskAssignmentSection({
                         {new Date(t.due_date).toLocaleDateString()}
                       </p>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteTaskId(t.id);
-                      }}
-                      className="p-1 rounded hover:bg-destructive/10 transition-colors shrink-0"
-                      title="Delete task"
-                    >
-                      <X className="w-4 h-4 text-destructive" />
-                    </button>
                   </div>
                 );
               })}
@@ -262,31 +250,6 @@ export function TaskAssignmentSection({
         )}
       </CardContent>
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteTaskId} onOpenChange={(open) => { if (!open) setDeleteTaskId(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Task</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this task? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (deleteTaskId) {
-                  deleteTask.mutate(deleteTaskId);
-                }
-                setDeleteTaskId(null);
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Card>
   );
 }

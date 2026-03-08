@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText, ExternalLink, CheckCircle, XCircle, MessageSquare, Clock, Download, Loader2 } from "lucide-react";
+import { FileText, ExternalLink, CheckCircle, XCircle, MessageSquare, Clock, Download, Loader2, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useDeleteTask } from "@/hooks/useTasks";
 import { cn } from "@/lib/utils";
 import { useTaskSubmissions } from "@/hooks/useTaskSubmissions";
 import { useUpdateTask } from "@/hooks/useTasks";
@@ -20,8 +22,10 @@ interface ReviewTaskDialogProps {
 export function ReviewTaskDialog({ open, onOpenChange, task }: ReviewTaskDialogProps) {
   const { data: submissions = [], isLoading } = useTaskSubmissions(task.id);
   const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
   const [feedback, setFeedback] = useState("");
   const [action, setAction] = useState<"approve" | "reject" | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const latestSubmission = submissions[0];
 
@@ -169,6 +173,14 @@ export function ReviewTaskDialog({ open, onOpenChange, task }: ReviewTaskDialogP
         )}
 
         <DialogFooter className="gap-2 sm:gap-0">
+          <Button
+            variant="outline"
+            className="text-destructive hover:bg-destructive/10 border-destructive/30 mr-auto"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            <Trash2 className="w-4 h-4 mr-1" />
+            Delete
+          </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             variant="outline"
@@ -188,6 +200,36 @@ export function ReviewTaskDialog({ open, onOpenChange, task }: ReviewTaskDialogP
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this task? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                deleteTask.mutate(task.id, {
+                  onSuccess: () => {
+                    toast.success("Task deleted");
+                    setShowDeleteConfirm(false);
+                    onOpenChange(false);
+                  },
+                  onError: (err: any) => toast.error(err.message || "Failed to delete task"),
+                });
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
