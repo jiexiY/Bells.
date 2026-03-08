@@ -39,37 +39,65 @@ export default function TeamLeadDashboard() {
   const departmentProjects = projects;
   const departmentTasks = tasks.filter((t) => departmentProjects.some((p) => p.id === t.project_id));
 
-  const assignedProjects = departmentProjects.filter((p) => p.status === "assigned");
-  const inProgressProjects = departmentProjects.filter((p) => p.status === "in_progress");
-  const pendingApprovalProjects = departmentProjects.filter((p) => p.status === "pending_approval");
-  const needRevisionProjects = departmentProjects.filter((p) => p.status === "need_revision");
-  const completeProjects = departmentProjects.filter((p) => p.status === "complete");
-  const avgProgress = departmentProjects.length ? Math.round(departmentProjects.reduce((s, p) => s + p.progress, 0) / departmentProjects.length) : 0;
-
-  const tabs = [
-    { key: "all", label: "All", count: departmentProjects.length },
-    { key: "assigned", label: "Assigned", count: assignedProjects.length },
-    { key: "in_progress", label: "In Progress", count: inProgressProjects.length },
-    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalProjects.length },
-    { key: "need_revision", label: "Need Revision", count: needRevisionProjects.length },
-    { key: "complete", label: "Completed", count: completeProjects.length },
-  ];
-
-  const getActiveList = () => {
-    switch (activeTab) {
-      case "assigned": return assignedProjects;
-      case "in_progress": return inProgressProjects;
-      case "pending_approval": return pendingApprovalProjects;
-      case "need_revision": return needRevisionProjects;
-      case "complete": return completeProjects;
-      default: return departmentProjects;
+  // Map task statuses to tab categories
+  const getTaskTabKey = (status: string): string => {
+    switch (status) {
+      case "unchecked":
+      case "incomplete": return "assigned";
+      case "in_progress": return "in_progress";
+      case "pending_approval": return "pending_approval";
+      case "need_revision":
+      case "declined": return "need_revision";
+      case "completed":
+      case "approved": return "complete";
+      default: return "assigned";
     }
   };
 
-  const filteredList = getActiveList().filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.description || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Combined items (projects + tasks) as a unified type
+  type StatusItem = { type: "project"; data: typeof departmentProjects[0] } | { type: "task"; data: TaskRow };
+  const allItems: StatusItem[] = [
+    ...departmentProjects.map(p => ({ type: "project" as const, data: p })),
+    ...departmentTasks.map(t => ({ type: "task" as const, data: t })),
+  ];
+
+  const getItemTabKey = (item: StatusItem) =>
+    item.type === "project" ? item.data.status : getTaskTabKey(item.data.status);
+
+  const assignedItems = allItems.filter(i => getItemTabKey(i) === "assigned");
+  const inProgressItems = allItems.filter(i => getItemTabKey(i) === "in_progress");
+  const pendingApprovalItems = allItems.filter(i => getItemTabKey(i) === "pending_approval");
+  const needRevisionItems = allItems.filter(i => getItemTabKey(i) === "need_revision");
+  const completeItems = allItems.filter(i => getItemTabKey(i) === "complete");
+
+  const avgProgress = departmentProjects.length ? Math.round(departmentProjects.reduce((s, p) => s + p.progress, 0) / departmentProjects.length) : 0;
+
+  const tabs = [
+    { key: "all", label: "All", count: allItems.length },
+    { key: "assigned", label: "Assigned", count: assignedItems.length },
+    { key: "in_progress", label: "In Progress", count: inProgressItems.length },
+    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalItems.length },
+    { key: "need_revision", label: "Need Revision", count: needRevisionItems.length },
+    { key: "complete", label: "Completed", count: completeItems.length },
+  ];
+
+  const getActiveItems = (): StatusItem[] => {
+    switch (activeTab) {
+      case "assigned": return assignedItems;
+      case "in_progress": return inProgressItems;
+      case "pending_approval": return pendingApprovalItems;
+      case "need_revision": return needRevisionItems;
+      case "complete": return completeItems;
+      default: return allItems;
+    }
+  };
+
+  const filteredItems = getActiveItems().filter(item => {
+    const name = item.type === "project" ? item.data.name : item.data.title;
+    const desc = item.type === "project" ? (item.data.description || "") : (item.data.description || "");
+    return name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      desc.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   const handleTaskStatusChange = (taskId: string, status: string) => {
     updateTask.mutate({ id: taskId, status: status as any });
@@ -133,40 +161,77 @@ export default function TeamLeadDashboard() {
         })}
       </div>
 
-      {/* Project Cards with task progress */}
+      {/* Cards for projects and tasks */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-        {filteredList.map((p) => {
-          const projectTasks = departmentTasks.filter(t => t.project_id === p.id);
-          const completedTasks = projectTasks.filter(t => t.status === "completed" || t.status === "approved");
-          const taskProgress = projectTasks.length ? Math.round((completedTasks.length / projectTasks.length) * 100) : 0;
-          return (
-            <Card key={p.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-5 space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-semibold text-foreground truncate text-base">{p.name}</h3>
-                  <StatusBadge status={p.status as any} type="project" />
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">{p.description}</p>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1.5">
-                    <span className="text-muted-foreground font-medium">Project Progress</span>
-                    <span className="font-semibold text-foreground">{p.progress}%</span>
+        {filteredItems.map((item) => {
+          if (item.type === "project") {
+            const p = item.data;
+            const projectTasks = departmentTasks.filter(t => t.project_id === p.id);
+            const completedTasks = projectTasks.filter(t => t.status === "completed" || t.status === "approved");
+            const taskProgress = projectTasks.length ? Math.round((completedTasks.length / projectTasks.length) * 100) : 0;
+            return (
+              <Card key={`project-${p.id}`} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-semibold text-foreground truncate text-base">{p.name}</h3>
+                    <StatusBadge status={p.status as any} type="project" />
                   </div>
-                  <ProgressBar value={p.progress} showLabel={false} size="sm" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1.5">
-                    <span className="text-muted-foreground font-medium">Tasks ({completedTasks.length}/{projectTasks.length})</span>
-                    <span className="font-semibold text-foreground">{taskProgress}%</span>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{p.description}</p>
+                  <div>
+                    <div className="flex items-center justify-between text-sm mb-1.5">
+                      <span className="text-muted-foreground font-medium">Project Progress</span>
+                      <span className="font-semibold text-foreground">{p.progress}%</span>
+                    </div>
+                    <ProgressBar value={p.progress} showLabel={false} size="sm" />
                   </div>
-                  <ProgressBar value={taskProgress} showLabel={false} size="sm" />
-                </div>
-              </CardContent>
-            </Card>
-          );
+                  <div>
+                    <div className="flex items-center justify-between text-sm mb-1.5">
+                      <span className="text-muted-foreground font-medium">Tasks ({completedTasks.length}/{projectTasks.length})</span>
+                      <span className="font-semibold text-foreground">{taskProgress}%</span>
+                    </div>
+                    <ProgressBar value={taskProgress} showLabel={false} size="sm" />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          } else {
+            const t = item.data;
+            const project = departmentProjects.find(p => p.id === t.project_id);
+            return (
+              <Card key={`task-${t.id}`} className="hover:shadow-md transition-shadow border-l-4 border-l-accent">
+                <CardContent className="p-5 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <h3 className="font-semibold text-foreground truncate text-base">{t.title}</h3>
+                    </div>
+                    <StatusBadge status={t.status as any} type="task" />
+                  </div>
+                  {project && (
+                    <p className="text-xs text-muted-foreground">
+                      Project: <span className="font-medium text-foreground">{project.name}</span>
+                    </p>
+                  )}
+                  <p className="text-sm text-muted-foreground line-clamp-2">{t.description}</p>
+                  {t.assignee_name && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{t.assignee_name}</span>
+                    </div>
+                  )}
+                  {t.due_date && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      <span>{new Date(t.due_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          }
         })}
-        {filteredList.length === 0 && (
-          <p className="text-muted-foreground col-span-full text-center py-12">No projects found</p>
+        {filteredItems.length === 0 && (
+          <p className="text-muted-foreground col-span-full text-center py-12">No items found</p>
         )}
       </div>
 
