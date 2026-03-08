@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./StatusBadge";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCreateTask, useTasks } from "@/hooks/useTasks";
+import { useCreateTask, useTasks, useDeleteTask } from "@/hooks/useTasks";
 import type { TaskStatus } from "@/types/project";
 
 interface Assignee {

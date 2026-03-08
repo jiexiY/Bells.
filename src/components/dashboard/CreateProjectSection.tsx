@@ -11,7 +11,7 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProjects, useCreateProject } from "@/hooks/useProjects";
-import { useTasks, useCreateTask } from "@/hooks/useTasks";
+import { useTasks, useCreateTask, useDeleteTask } from "@/hooks/useTasks";
 import { useMembers } from "@/hooks/useMembers";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
