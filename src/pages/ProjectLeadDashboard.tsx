@@ -3,7 +3,7 @@ import { ProjectTaskStatusCard } from "@/components/dashboard/ProjectTaskStatusC
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
-import { ProjectStatusTracker } from "@/components/dashboard/ProjectStatusTracker";
+import { ReviewTaskDialog } from "@/components/dashboard/ReviewTaskDialog";
 import { ReviewTaskDialog } from "@/components/dashboard/ReviewTaskDialog";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
