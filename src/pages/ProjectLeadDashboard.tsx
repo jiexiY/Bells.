@@ -140,46 +140,15 @@ export default function ProjectLeadDashboard() {
       {/* Create Project Section */}
       <CreateProjectSection />
 
-      {/* Project Status Tracker */}
-      <ProjectStatusTracker projects={projects} />
-
-      {/* Task Assignment Section */}
-      <TaskAssignmentSection
-        projects={projects.map(p => ({ id: p.id, name: p.name }))}
-        assignees={teamLeadsAndMembers.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
-        title="Assign Individual Task"
-        description="Create and assign individual tasks to team leads and members"
-        onTaskClick={(task) => setReviewTask(task)}
-      />
-
-      {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-border mb-6 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              "px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap",
-              activeTab === tab.key
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {tab.label} ({tab.count})
-            {activeTab === tab.key && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Project Cards Grid */}
+      {/* Per-Project Status Tracker Cards */}
+      <h2 className="text-lg font-semibold text-foreground mb-4">All Projects</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {filteredList.map((p) => (
-          <ProjectCard
+          <ProjectTaskStatusCard
             key={p.id}
-            project={toProject(p)}
-            showFeedbackActions={p.status === "pending_approval"}
+            project={p}
+            tasks={tasks.filter(t => t.project_id === p.id)}
+            showFeedbackActions
             onFeedback={handleFeedback}
           />
         ))}
