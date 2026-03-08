@@ -275,19 +275,8 @@ export function CreateProjectSection({
                                     <span className="text-[10px] text-muted-foreground">{task.assignee_name}</span>
                                   )}
                                 </div>
-                                <span className="ml-auto shrink-0 flex items-center gap-1.5">
+                                <span className="ml-auto shrink-0">
                                   <StatusBadge status={task.status as TaskStatus} type="task" />
-                                  <span
-                                    role="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleteTaskId(task.id);
-                                    }}
-                                    className="p-0.5 rounded hover:bg-destructive/10 transition-colors"
-                                    title="Delete task"
-                                  >
-                                    <X className="w-3.5 h-3.5 text-destructive" />
-                                  </span>
                                 </span>
                               </button>
                             ))}
