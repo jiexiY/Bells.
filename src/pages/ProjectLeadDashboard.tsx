@@ -164,6 +164,7 @@ export default function ProjectLeadDashboard() {
             assigned: "bg-amber-500",
             in_progress: "bg-blue-500",
             pending_approval: "bg-orange-500",
+            need_revision: "bg-purple-500",
             complete: "bg-emerald-500",
           };
           return (
