@@ -282,12 +282,7 @@ export function CreateProjectSection({
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      if (confirm("Delete this task?")) {
-                                        deleteTask.mutate(task.id, {
-                                          onSuccess: () => toast.success("Task deleted"),
-                                          onError: (err) => toast.error(err.message),
-                                        });
-                                      }
+                                      setDeleteTaskId(task.id);
                                     }}
                                     className="p-0.5 rounded hover:bg-destructive/10 transition-colors"
                                     title="Delete task"
