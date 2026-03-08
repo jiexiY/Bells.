@@ -17,7 +17,7 @@ import { FolderCheck, Clock, CheckCircle2, Users, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import type { TaskStatus } from "@/types/project";
 
