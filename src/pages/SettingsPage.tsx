@@ -734,23 +734,52 @@ export default function SettingsPage() {
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "text-xs font-medium px-2.5 py-1 rounded-full",
-                          m.is_active ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
+                          m.is_active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                         )}>
                           {m.is_active ? "Active" : "Inactive"}
                         </span>
-                        {isProjectLead && m.is_active && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
-                            onClick={() => {
-                              setClosingWsId(m.company_id);
-                              setCloseWsDialogOpen(true);
-                            }}
-                          >
-                            <XCircle className="h-3.5 w-3.5 mr-1" />
-                            Close
-                          </Button>
+                        {m.is_active && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-xs"
+                              onClick={async () => {
+                                setTransferringWsId(m.company_id);
+                                await loadWorkspaceMembers(m.company_id);
+                                setTransferDialogOpen(true);
+                              }}
+                            >
+                              <ArrowRightLeft className="h-3.5 w-3.5 mr-1" />
+                              Transfer
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
+                              onClick={() => {
+                                setLeavingWsId(m.company_id);
+                                setLeaveDialogOpen(true);
+                              }}
+                            >
+                              <LogOut className="h-3.5 w-3.5 mr-1" />
+                              Leave
+                            </Button>
+                            {isProjectLead && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
+                                onClick={() => {
+                                  setClosingWsId(m.company_id);
+                                  setCloseWsDialogOpen(true);
+                                }}
+                              >
+                                <XCircle className="h-3.5 w-3.5 mr-1" />
+                                Close
+                              </Button>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
