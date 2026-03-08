@@ -46,6 +46,7 @@ export function CreateProjectSection({
   });
 
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<typeof tasks[0] | null>(null);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskProjectId, setTaskProjectId] = useState("");
   const [taskForm, setTaskForm] = useState({
