@@ -35,7 +35,10 @@ import {
   XCircle,
   ArrowRightLeft,
   LogOut,
+  UserPlus,
+  Copy,
 } from "lucide-react";
+import { useSendInvitation } from "@/hooks/useInvitations";
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
