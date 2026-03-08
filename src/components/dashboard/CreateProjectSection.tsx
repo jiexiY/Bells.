@@ -43,6 +43,7 @@ export function CreateProjectSection({
     dueDate: "",
   });
 
+  const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskProjectId, setTaskProjectId] = useState("");
   const [taskForm, setTaskForm] = useState({
