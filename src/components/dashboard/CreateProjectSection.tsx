@@ -27,6 +27,7 @@ interface CreateProjectSectionProps {
 export function CreateProjectSection({
   title = "Create Project",
   description = "Create a new project for your team",
+  statusFilter,
 }: CreateProjectSectionProps) {
   const { user, profileName } = useAuth();
   const createProject = useCreateProject();
