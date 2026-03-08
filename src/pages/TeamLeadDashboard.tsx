@@ -32,6 +32,7 @@ export default function TeamLeadDashboard() {
   const updateTask = useUpdateTask();
 
   const [activeTab, setActiveTab] = useState("all");
+  const [showCards, setShowCards] = useState(true); // cards visible by default for "all"
   const [searchQuery, setSearchQuery] = useState("");
   const [reviewTask, setReviewTask] = useState<TaskRow | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -145,7 +146,14 @@ export default function TeamLeadDashboard() {
           return (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => {
+                if (activeTab === tab.key) {
+                  setShowCards(!showCards);
+                } else {
+                  setActiveTab(tab.key);
+                  setShowCards(true);
+                }
+              }}
               className={cn(
                 "flex items-center gap-2 p-2 rounded-lg transition-colors border",
                 activeTab === tab.key
@@ -163,8 +171,8 @@ export default function TeamLeadDashboard() {
         })}
       </div>
 
-      {/* Cards for projects and tasks - only show when a specific tab is selected */}
-      {activeTab !== "all" && (
+      {/* Cards for projects and tasks - toggle visibility on tab click */}
+      {showCards && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
           {filteredItems.map((item) => {
             if (item.type === "project") {
