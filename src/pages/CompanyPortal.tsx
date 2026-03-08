@@ -298,6 +298,40 @@ export default function CompanyPortal() {
           </Dialog>
         </div>
       </div>
+
+      {/* Delete Organization Confirmation */}
+      <AlertDialog open={!!deleteCompanyId} onOpenChange={(open) => { if (!open) setDeleteCompanyId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Organization</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this organization? This action cannot be undone and will remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteCompanyId) {
+                  deleteCompany.mutate(deleteCompanyId, {
+                    onSuccess: () => {
+                      toast.success("Organization deleted");
+                      if (activeCompanyId === deleteCompanyId) {
+                        setActiveCompanyId(null);
+                      }
+                      setDeleteCompanyId(null);
+                    },
+                    onError: () => toast.error("Failed to delete organization"),
+                  });
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
