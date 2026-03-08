@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCompany } from "@/contexts/CompanyContext";
 
 export interface TaskRow {
   id: string;
@@ -15,16 +16,22 @@ export interface TaskRow {
   submission_type: string | null;
   submission_url: string | null;
   submission_file_url: string | null;
+  company_id: string | null;
 }
 
 export function useTasks() {
+  const { activeCompanyId } = useCompany();
   return useQuery({
-    queryKey: ["tasks"],
+    queryKey: ["tasks", activeCompanyId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tasks")
         .select("*")
         .order("created_at", { ascending: false });
+      if (activeCompanyId) {
+        query = query.eq("company_id", activeCompanyId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data as TaskRow[];
     },
@@ -33,9 +40,10 @@ export function useTasks() {
 
 export function useCreateTask() {
   const qc = useQueryClient();
+  const { activeCompanyId } = useCompany();
   return useMutation({
-    mutationFn: async (task: Omit<TaskRow, "id" | "created_at" | "submission_type" | "submission_url" | "submission_file_url">) => {
-      const { error } = await supabase.from("tasks").insert(task as any);
+    mutationFn: async (task: Omit<TaskRow, "id" | "created_at" | "submission_type" | "submission_url" | "submission_file_url" | "company_id">) => {
+      const { error } = await supabase.from("tasks").insert({ ...task, company_id: activeCompanyId } as any);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
