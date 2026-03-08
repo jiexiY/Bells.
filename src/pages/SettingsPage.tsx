@@ -812,6 +812,74 @@ export default function SettingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Transfer Role Dialog */}
+      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Transfer your role</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Select a workspace member to transfer your role to. You will be downgraded to a member role.
+            </p>
+            <div className="space-y-2">
+              <Label>Select member</Label>
+              <Select value={transferTargetUserId} onValueChange={setTransferTargetUserId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a member..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {workspaceMembers.length === 0 ? (
+                    <SelectItem value="none" disabled>No other members available</SelectItem>
+                  ) : (
+                    workspaceMembers.map((member) => (
+                      <SelectItem key={member.user_id} value={member.user_id}>
+                        {member.name} ({member.email}) - {member.role.replace("_", " ")}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setTransferDialogOpen(false);
+              setTransferringWsId(null);
+              setTransferTargetUserId("");
+            }}>Cancel</Button>
+            <Button 
+              onClick={handleTransferRole} 
+              disabled={transferring || !transferTargetUserId || workspaceMembers.length === 0}
+            >
+              {transferring ? "Transferring..." : "Transfer role"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Leave Workspace Confirmation */}
+      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave this workspace?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will no longer have access to this workspace. If you are a project lead, you must transfer your role first unless there is another project lead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setLeavingWsId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLeaveWorkspace}
+              disabled={leaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {leaving ? "Leaving..." : "Leave workspace"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
