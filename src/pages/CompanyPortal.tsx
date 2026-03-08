@@ -26,7 +26,7 @@ export default function CompanyPortal() {
   const createCompany = useCreateCompany();
   const { data: pendingInvites = [] } = useMyInvitations();
   const respondInvite = useRespondInvitation();
-  const { setActiveCompanyId } = useCompany();
+  const { activeCompanyId, setActiveCompanyId } = useCompany();
   const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
