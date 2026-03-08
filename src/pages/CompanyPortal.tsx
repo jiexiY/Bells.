@@ -26,6 +26,7 @@ export default function CompanyPortal() {
   const { data: pendingInvites = [] } = useMyInvitations();
   const respondInvite = useRespondInvitation();
   const { setActiveCompanyId } = useCompany();
+  const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
@@ -35,6 +36,28 @@ export default function CompanyPortal() {
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
   const [newDepartment, setNewDepartment] = useState<string>("");
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [renameCompanyId, setRenameCompanyId] = useState<string | null>(null);
+  const [renameName, setRenameName] = useState("");
+  const [renaming, setRenaming] = useState(false);
+
+  const handleRename = async () => {
+    if (!renameCompanyId || !renameName.trim()) return;
+    setRenaming(true);
+    try {
+      const { error } = await supabase.from("companies").update({ name: renameName.trim() }).eq("id", renameCompanyId);
+      if (error) throw error;
+      toast.success("Organization renamed successfully");
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      setRenameDialogOpen(false);
+      setRenameCompanyId(null);
+      setRenameName("");
+    } catch {
+      toast.error("Failed to rename organization");
+    } finally {
+      setRenaming(false);
+    }
+  };
 
   const handleJoinWorkspace = async () => {
     if (!inviteCode.trim()) return;
