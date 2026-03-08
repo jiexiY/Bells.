@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -34,17 +34,6 @@ export default function ProjectLeadDashboard() {
   const activeCompany = companies.find(c => c.id === activeCompanyId);
   const { data: allMembers = [] } = useMembers();
   const teamLeadsAndMembers = allMembers.filter(m => m.role === "team_lead" || m.role === "member");
-
-  const deadlineDates = useMemo(() => {
-    const dates = new Set<string>();
-    projects.forEach(p => {
-      if (p.due_date) dates.add(new Date(p.due_date).toDateString());
-    });
-    tasks.forEach(t => {
-      if (t.due_date) dates.add(new Date(t.due_date).toDateString());
-    });
-    return dates;
-  }, [projects, tasks]);
 
   const handleCopyInviteCode = () => {
     if (activeCompany?.invite_code) {
@@ -232,6 +221,7 @@ export default function ProjectLeadDashboard() {
         title="Individual Tasks"
         description="Create and assign tasks to team leads and members"
         onTaskClick={(task) => setReviewTask(task)}
+        showAllTasks
       />
 
       {/* Project Calendar */}
@@ -249,21 +239,6 @@ export default function ProjectLeadDashboard() {
               selected={selectedDate}
               onSelect={setSelectedDate}
               className="rounded-lg border border-border"
-              modifiers={{ hasDeadline: (date: Date) => deadlineDates.has(date.toDateString()) }}
-              modifiersClassNames={{ hasDeadline: "relative" }}
-              components={{
-                DayContent: ({ date }) => {
-                  const hasEvent = deadlineDates.has(date.toDateString());
-                  return (
-                    <div className="relative flex flex-col items-center">
-                      {hasEvent && (
-                        <div className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-primary" />
-                      )}
-                      <span className="mt-0.5">{date.getDate()}</span>
-                    </div>
-                  );
-                },
-              }}
             />
             <div className="flex-1">
               <h3 className="font-semibold text-foreground mb-3">

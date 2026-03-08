@@ -5,17 +5,15 @@ import { useUnreadCountByCompany } from "@/hooks/useNotifications";
 import { useMyInvitations, useRespondInvitation } from "@/hooks/useInvitations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
-import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Building2, Plus, ArrowRight, Mail, Check, X, KeyRound, Pencil } from "lucide-react";
+import { Building2, Plus, ArrowRight, Mail, Check, X, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 
 export default function CompanyPortal() {
   const { user } = useAuth();
@@ -26,8 +24,7 @@ export default function CompanyPortal() {
   const createCompany = useCreateCompany();
   const { data: pendingInvites = [] } = useMyInvitations();
   const respondInvite = useRespondInvitation();
-  const { activeCompanyId, setActiveCompanyId } = useCompany();
-  const queryClient = useQueryClient();
+  const { setActiveCompanyId } = useCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
@@ -37,28 +34,6 @@ export default function CompanyPortal() {
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<"project_lead" | "team_lead" | "member">("project_lead");
   const [newDepartment, setNewDepartment] = useState<string>("");
-  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
-  const [renameCompanyId, setRenameCompanyId] = useState<string | null>(null);
-  const [renameName, setRenameName] = useState("");
-  const [renaming, setRenaming] = useState(false);
-
-  const handleRename = async () => {
-    if (!renameCompanyId || !renameName.trim()) return;
-    setRenaming(true);
-    try {
-      const { error } = await supabase.from("companies").update({ name: renameName.trim() }).eq("id", renameCompanyId);
-      if (error) throw error;
-      toast.success("Organization renamed successfully");
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
-      setRenameDialogOpen(false);
-      setRenameCompanyId(null);
-      setRenameName("");
-    } catch {
-      toast.error("Failed to rename organization");
-    } finally {
-      setRenaming(false);
-    }
-  };
 
   const handleJoinWorkspace = async () => {
     if (!inviteCode.trim()) return;
@@ -137,10 +112,7 @@ export default function CompanyPortal() {
             return (
               <Card
                 key={company.id}
-                className={cn(
-                  "cursor-pointer hover:shadow-md transition-shadow group",
-                  activeCompanyId === company.id && "ring-2 ring-primary border-primary"
-                )}
+                className="cursor-pointer hover:shadow-md transition-shadow group"
                 onClick={() => handleEnter(company.id)}
               >
                 <CardContent className="flex items-center justify-between p-5">
@@ -156,14 +128,7 @@ export default function CompanyPortal() {
                       )}
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground">{company.name}</h3>
-                        {activeCompanyId === company.id && (
-                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none">
-                            Current
-                          </span>
-                        )}
-                      </div>
+                      <h3 className="font-semibold text-foreground">{company.name}</h3>
                       <p className="text-sm text-muted-foreground capitalize">
                         {membership?.role?.replace("_", " ")} {membership?.department ? `· ${membership.department}` : ""}
                       </p>
@@ -174,24 +139,7 @@ export default function CompanyPortal() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {membership?.role === "project_lead" && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRenameCompanyId(company.id);
-                          setRenameName(company.name);
-                          setRenameDialogOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </CardContent>
               </Card>
             );
@@ -331,30 +279,6 @@ export default function CompanyPortal() {
             </DialogContent>
           </Dialog>
         </div>
-
-        {/* Rename Dialog */}
-        <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Rename Organization</DialogTitle>
-            </DialogHeader>
-            <div className="py-4 space-y-2">
-              <Label>New Name</Label>
-              <Input
-                value={renameName}
-                onChange={e => setRenameName(e.target.value)}
-                placeholder="Organization name"
-                onKeyDown={e => e.key === "Enter" && handleRename()}
-              />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setRenameDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleRename} disabled={renaming || !renameName.trim()}>
-                {renaming ? "Renaming..." : "Rename"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );

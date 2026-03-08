@@ -141,7 +141,7 @@ export default function TeamLeadDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
         <StatsCard title="Department Projects" value={departmentProjects.length} icon={FolderCheck} />
         <StatsCard title="Completed" value={completeItems.length} icon={CheckCircle2} description={`${departmentProjects.length ? Math.round((completeItems.length / (departmentProjects.length + tasks.length)) * 100) : 0}% completion rate`} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} />
