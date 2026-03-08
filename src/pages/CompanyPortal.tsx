@@ -156,7 +156,14 @@ export default function CompanyPortal() {
                       )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground">{company.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground">{company.name}</h3>
+                        {activeCompanyId === company.id && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none">
+                            Current
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground capitalize">
                         {membership?.role?.replace("_", " ")} {membership?.department ? `· ${membership.department}` : ""}
                       </p>
