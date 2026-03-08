@@ -904,6 +904,95 @@ export default function SettingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add Member Dialog */}
+      <Dialog open={addMemberDialogOpen} onOpenChange={setAddMemberDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add member</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {/* Copy Invite Link */}
+            <div className="space-y-2">
+              <Label>Invite link</Label>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={(() => {
+                    const company = companies.find((c) => c.id === addMemberWsId);
+                    return company ? `Invite code: ${company.invite_code}` : "";
+                  })()}
+                  className="text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => {
+                    const company = companies.find((c) => c.id === addMemberWsId);
+                    if (company) {
+                      navigator.clipboard.writeText(company.invite_code);
+                      toast({ title: "Copied", description: "Invite code copied to clipboard." });
+                    }
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Share this code so they can join via the portal.</p>
+            </div>
+
+            <div className="relative">
+              <Separator />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">or</span>
+            </div>
+
+            {/* Send Email Invite */}
+            <div className="space-y-2">
+              <Label>Email address</Label>
+              <Input
+                type="email"
+                placeholder="colleague@company.com"
+                value={addMemberEmail}
+                onChange={(e) => setAddMemberEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Select value={addMemberRole} onValueChange={(v: any) => setAddMemberRole(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="team_lead">Team Lead</SelectItem>
+                  <SelectItem value="member">Member</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddMemberDialogOpen(false)}>Cancel</Button>
+            <Button
+              disabled={!addMemberEmail.trim() || sendInvitation.isPending}
+              onClick={async () => {
+                if (!addMemberWsId || !addMemberEmail.trim()) return;
+                try {
+                  await sendInvitation.mutateAsync({
+                    email: addMemberEmail.trim(),
+                    role: addMemberRole,
+                    inviterName: profile.name,
+                  });
+                  toast({ title: "Invitation sent", description: `Invite sent to ${addMemberEmail}` });
+                  setAddMemberDialogOpen(false);
+                  setAddMemberEmail("");
+                } catch (err: any) {
+                  toast({ title: "Error", description: err.message || "Failed to send invitation.", variant: "destructive" });
+                }
+              }}
+            >
+              {sendInvitation.isPending ? "Sending..." : "Send invite"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
