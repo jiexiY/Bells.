@@ -78,7 +78,7 @@ export function ProjectTaskStatusCard({ project, tasks, showFeedbackActions, onF
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base truncate">{project.name}</CardTitle>
-          <StatusBadge status={project.status} type="project" />
+          <StatusBadge status={project.status as any} type="project" />
         </div>
         {project.description && (
           <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{project.description}</p>
