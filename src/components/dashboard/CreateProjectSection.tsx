@@ -254,18 +254,6 @@ export function CreateProjectSection({
                                 key={task.id}
                                 className="flex items-center gap-3 text-xs p-2.5 rounded-md bg-card border border-border/50 hover:border-border transition-colors"
                               >
-                                <div className={cn(
-                                  "w-3.5 h-3.5 rounded border-2 shrink-0 flex items-center justify-center",
-                                  (task.status === "completed" || task.status === "approved")
-                                    ? "border-primary bg-primary"
-                                    : "border-muted-foreground/40"
-                                )}>
-                                  {(task.status === "completed" || task.status === "approved") && (
-                                    <svg className="w-2 h-2 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  )}
-                                </div>
                                 <div className="flex-1 min-w-0">
                                   <span className={cn(
                                     "block truncate",
