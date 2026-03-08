@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Plus, FolderPlus, UserPlus, ChevronDown, ChevronRight, ListTodo, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +43,7 @@ export function CreateProjectSection({
     dueDate: "",
   });
 
+  const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskProjectId, setTaskProjectId] = useState("");
   const [taskForm, setTaskForm] = useState({
@@ -280,12 +282,7 @@ export function CreateProjectSection({
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      if (confirm("Delete this task?")) {
-                                        deleteTask.mutate(task.id, {
-                                          onSuccess: () => toast.success("Task deleted"),
-                                          onError: (err) => toast.error(err.message),
-                                        });
-                                      }
+                                      setDeleteTaskId(task.id);
                                     }}
                                     className="p-0.5 rounded hover:bg-destructive/10 transition-colors"
                                     title="Delete task"
@@ -365,6 +362,34 @@ export function CreateProjectSection({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTaskId} onOpenChange={(open) => { if (!open) setDeleteTaskId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this task? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteTaskId) {
+                  deleteTask.mutate(deleteTaskId, {
+                    onSuccess: () => toast.success("Task deleted"),
+                    onError: (err) => toast.error(err.message),
+                  });
+                }
+                setDeleteTaskId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
