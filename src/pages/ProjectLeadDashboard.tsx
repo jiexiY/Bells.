@@ -35,6 +35,17 @@ export default function ProjectLeadDashboard() {
   const { data: allMembers = [] } = useMembers();
   const teamLeadsAndMembers = allMembers.filter(m => m.role === "team_lead" || m.role === "member");
 
+  const deadlineDates = useMemo(() => {
+    const dates = new Set<string>();
+    projects.forEach(p => {
+      if (p.due_date) dates.add(new Date(p.due_date).toDateString());
+    });
+    tasks.forEach(t => {
+      if (t.due_date) dates.add(new Date(t.due_date).toDateString());
+    });
+    return dates;
+  }, [projects, tasks]);
+
   const handleCopyInviteCode = () => {
     if (activeCompany?.invite_code) {
       navigator.clipboard.writeText(activeCompany.invite_code);
