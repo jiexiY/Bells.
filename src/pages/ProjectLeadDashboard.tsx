@@ -56,38 +56,7 @@ export default function ProjectLeadDashboard() {
     }
   };
 
-  const toProject = (p: typeof projects[0]) => ({
-    id: p.id,
-    name: p.name,
-    description: p.description || "",
-    status: p.status as any,
-    progress: p.progress,
-    leadId: p.lead_id || "",
-    leadName: p.lead_name || "",
-    department: p.department,
-    createdAt: p.created_at,
-    dueDate: p.due_date,
-  });
-
-  const tabs = [
-    { key: "all", label: "All", count: projects.length },
-    { key: "assigned", label: "Assigned", count: assignedProjects.length },
-    { key: "in_progress", label: "In Progress", count: inProgressProjects.length },
-    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalProjects.length },
-    { key: "complete", label: "Completed", count: completeProjects.length },
-  ];
-
-  const getActiveList = () => {
-    switch (activeTab) {
-      case "assigned": return assignedProjects;
-      case "in_progress": return inProgressProjects;
-      case "pending_approval": return pendingApprovalProjects;
-      case "complete": return completeProjects;
-      default: return projects;
-    }
-  };
-
-  const filteredList = getActiveList().filter(p =>
+  const filteredList = projects.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.description || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
