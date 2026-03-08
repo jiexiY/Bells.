@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, FolderPlus, ListTodo, UserPlus } from "lucide-react";
+import { Plus, FolderPlus, UserPlus, ChevronDown, ChevronRight, ListTodo } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ export function CreateProjectSection({
   const { data: tasks = [] } = useTasks();
   const { data: members = [] } = useMembers();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -40,7 +41,6 @@ export function CreateProjectSection({
     dueDate: "",
   });
 
-  // Task assignment dialog state
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskProjectId, setTaskProjectId] = useState("");
   const [taskForm, setTaskForm] = useState({
@@ -103,6 +103,10 @@ export function CreateProjectSection({
     setTaskProjectId(projectId);
     setTaskForm({ title: "", description: "", assignedTo: "", dueDate: "" });
     setTaskDialogOpen(true);
+  };
+
+  const toggleProject = (projectId: string) => {
+    setExpandedProjectId((prev) => (prev === projectId ? null : projectId));
   };
 
   const hasProjects = projects.length > 0;
@@ -169,9 +173,7 @@ export function CreateProjectSection({
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
-              </Button>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleCreate} disabled={!form.name || !form.department || !form.dueDate || createProject.isPending}>
                 {createProject.isPending ? "Creating..." : "Create Project"}
               </Button>
@@ -185,65 +187,104 @@ export function CreateProjectSection({
             Click "New Project" to create and assign a project to your team.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
             {projects.map((project) => {
               const projectTasks = tasks.filter((t) => t.project_id === project.id);
+              const isExpanded = expandedProjectId === project.id;
+
               return (
-                <Card key={project.id} className="border border-border bg-muted/30">
-                  <CardHeader className="p-4 pb-2">
-                    <div className="flex items-center justify-between gap-2">
+                <div key={project.id} className="rounded-lg border border-border bg-muted/30 overflow-hidden transition-all">
+                  {/* Project Row - Clickable */}
+                  <button
+                    onClick={() => toggleProject(project.id)}
+                    className="w-full flex items-center gap-3 p-3 sm:p-4 text-left hover:bg-muted/60 transition-colors"
+                  >
+                    <div className="flex-shrink-0 text-muted-foreground">
+                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">{project.name}</h4>
+                      {project.description && (
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">{project.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-xs text-muted-foreground hidden sm:inline-flex items-center gap-1">
+                        <ListTodo className="w-3 h-3" />
+                        {projectTasks.length}
+                      </span>
                       <StatusBadge status={project.status as any} type="project" />
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mt-2 w-full text-xs h-7"
-                      onClick={() => openTaskDialog(project.id)}
-                    >
-                      <UserPlus className="w-3 h-3 mr-1" />
-                      Assign Task
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    {projectTasks.length === 0 ? (
-                      <p className="text-xs text-muted-foreground py-2">No tasks yet</p>
-                    ) : (
-                      <ScrollArea className="max-h-[200px]">
-                        <div className="space-y-1.5 mt-2">
-                          {projectTasks.map((task) => (
-                            <div
-                              key={task.id}
-                              className="flex items-center gap-2 text-xs p-2 rounded bg-background/60 border border-border/50"
-                            >
-                              <div className={cn(
-                                "w-3.5 h-3.5 rounded border-2 shrink-0 flex items-center justify-center",
-                                (task.status === "completed" || task.status === "approved")
-                                  ? "border-primary bg-primary"
-                                  : "border-muted-foreground/40"
-                              )}>
-                                {(task.status === "completed" || task.status === "approved") && (
-                                  <svg className="w-2 h-2 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                )}
-                              </div>
-                              <span className={cn(
-                                "truncate flex-1",
-                                (task.status === "completed" || task.status === "approved")
-                                  ? "text-muted-foreground line-through"
-                                  : "text-foreground"
-                              )}>{task.title}</span>
-                              <span className="ml-auto scale-90">
-                                <StatusBadge status={task.status as TaskStatus} type="task" />
-                              </span>
-                            </div>
-                          ))}
+                  </button>
+
+                  {/* Expanded Tasks Panel */}
+                  {isExpanded && (
+                    <div className="border-t border-border bg-background/50 px-3 sm:px-4 pb-3 sm:pb-4">
+                      <div className="flex items-center justify-between pt-3 pb-2">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Tasks ({projectTasks.length})
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openTaskDialog(project.id);
+                          }}
+                        >
+                          <UserPlus className="w-3 h-3 mr-1" />
+                          Assign Task
+                        </Button>
+                      </div>
+
+                      {projectTasks.length === 0 ? (
+                        <div className="text-center py-6">
+                          <ListTodo className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
+                          <p className="text-xs text-muted-foreground">No tasks assigned yet</p>
                         </div>
-                      </ScrollArea>
-                    )}
-                  </CardContent>
-                </Card>
+                      ) : (
+                        <ScrollArea className="max-h-[280px]">
+                          <div className="space-y-1.5">
+                            {projectTasks.map((task) => (
+                              <div
+                                key={task.id}
+                                className="flex items-center gap-3 text-xs p-2.5 rounded-md bg-card border border-border/50 hover:border-border transition-colors"
+                              >
+                                <div className={cn(
+                                  "w-3.5 h-3.5 rounded border-2 shrink-0 flex items-center justify-center",
+                                  (task.status === "completed" || task.status === "approved")
+                                    ? "border-primary bg-primary"
+                                    : "border-muted-foreground/40"
+                                )}>
+                                  {(task.status === "completed" || task.status === "approved") && (
+                                    <svg className="w-2 h-2 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className={cn(
+                                    "block truncate",
+                                    (task.status === "completed" || task.status === "approved")
+                                      ? "text-muted-foreground line-through"
+                                      : "text-foreground"
+                                  )}>{task.title}</span>
+                                  {task.assignee_name && (
+                                    <span className="text-[10px] text-muted-foreground">{task.assignee_name}</span>
+                                  )}
+                                </div>
+                                <span className="ml-auto shrink-0">
+                                  <StatusBadge status={task.status as TaskStatus} type="task" />
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      )}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
