@@ -39,37 +39,65 @@ export default function TeamLeadDashboard() {
   const departmentProjects = projects;
   const departmentTasks = tasks.filter((t) => departmentProjects.some((p) => p.id === t.project_id));
 
-  const assignedProjects = departmentProjects.filter((p) => p.status === "assigned");
-  const inProgressProjects = departmentProjects.filter((p) => p.status === "in_progress");
-  const pendingApprovalProjects = departmentProjects.filter((p) => p.status === "pending_approval");
-  const needRevisionProjects = departmentProjects.filter((p) => p.status === "need_revision");
-  const completeProjects = departmentProjects.filter((p) => p.status === "complete");
-  const avgProgress = departmentProjects.length ? Math.round(departmentProjects.reduce((s, p) => s + p.progress, 0) / departmentProjects.length) : 0;
-
-  const tabs = [
-    { key: "all", label: "All", count: departmentProjects.length },
-    { key: "assigned", label: "Assigned", count: assignedProjects.length },
-    { key: "in_progress", label: "In Progress", count: inProgressProjects.length },
-    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalProjects.length },
-    { key: "need_revision", label: "Need Revision", count: needRevisionProjects.length },
-    { key: "complete", label: "Completed", count: completeProjects.length },
-  ];
-
-  const getActiveList = () => {
-    switch (activeTab) {
-      case "assigned": return assignedProjects;
-      case "in_progress": return inProgressProjects;
-      case "pending_approval": return pendingApprovalProjects;
-      case "need_revision": return needRevisionProjects;
-      case "complete": return completeProjects;
-      default: return departmentProjects;
+  // Map task statuses to tab categories
+  const getTaskTabKey = (status: string): string => {
+    switch (status) {
+      case "unchecked":
+      case "incomplete": return "assigned";
+      case "in_progress": return "in_progress";
+      case "pending_approval": return "pending_approval";
+      case "need_revision":
+      case "declined": return "need_revision";
+      case "completed":
+      case "approved": return "complete";
+      default: return "assigned";
     }
   };
 
-  const filteredList = getActiveList().filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.description || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Combined items (projects + tasks) as a unified type
+  type StatusItem = { type: "project"; data: typeof departmentProjects[0] } | { type: "task"; data: TaskRow };
+  const allItems: StatusItem[] = [
+    ...departmentProjects.map(p => ({ type: "project" as const, data: p })),
+    ...departmentTasks.map(t => ({ type: "task" as const, data: t })),
+  ];
+
+  const getItemTabKey = (item: StatusItem) =>
+    item.type === "project" ? item.data.status : getTaskTabKey(item.data.status);
+
+  const assignedItems = allItems.filter(i => getItemTabKey(i) === "assigned");
+  const inProgressItems = allItems.filter(i => getItemTabKey(i) === "in_progress");
+  const pendingApprovalItems = allItems.filter(i => getItemTabKey(i) === "pending_approval");
+  const needRevisionItems = allItems.filter(i => getItemTabKey(i) === "need_revision");
+  const completeItems = allItems.filter(i => getItemTabKey(i) === "complete");
+
+  const avgProgress = departmentProjects.length ? Math.round(departmentProjects.reduce((s, p) => s + p.progress, 0) / departmentProjects.length) : 0;
+
+  const tabs = [
+    { key: "all", label: "All", count: allItems.length },
+    { key: "assigned", label: "Assigned", count: assignedItems.length },
+    { key: "in_progress", label: "In Progress", count: inProgressItems.length },
+    { key: "pending_approval", label: "Pending Approval", count: pendingApprovalItems.length },
+    { key: "need_revision", label: "Need Revision", count: needRevisionItems.length },
+    { key: "complete", label: "Completed", count: completeItems.length },
+  ];
+
+  const getActiveItems = (): StatusItem[] => {
+    switch (activeTab) {
+      case "assigned": return assignedItems;
+      case "in_progress": return inProgressItems;
+      case "pending_approval": return pendingApprovalItems;
+      case "need_revision": return needRevisionItems;
+      case "complete": return completeItems;
+      default: return allItems;
+    }
+  };
+
+  const filteredItems = getActiveItems().filter(item => {
+    const name = item.type === "project" ? item.data.name : item.data.title;
+    const desc = item.type === "project" ? (item.data.description || "") : (item.data.description || "");
+    return name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      desc.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   const handleTaskStatusChange = (taskId: string, status: string) => {
     updateTask.mutate({ id: taskId, status: status as any });
