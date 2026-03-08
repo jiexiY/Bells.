@@ -107,6 +107,15 @@ export default function ProjectLeadDashboard() {
       {/* Create Project Section */}
       <CreateProjectSection />
 
+      {/* Task Assignment Section */}
+      <TaskAssignmentSection
+        projects={projects.map(p => ({ id: p.id, name: p.name }))}
+        assignees={teamLeadsAndMembers.map(m => ({ user_id: m.user_id, name: m.name, role: m.role }))}
+        title="Assign Individual Task"
+        description="Create and assign individual tasks to team leads and members"
+        onTaskClick={(task) => setReviewTask(task)}
+      />
+
       {/* Per-Project Status Tracker Cards */}
       <h2 className="text-lg font-semibold text-foreground mb-4">All Projects</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
