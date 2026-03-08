@@ -4,7 +4,7 @@ import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSection";
 import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
-import { ProjectStatusTracker } from "@/components/dashboard/ProjectStatusTracker";
+
 import { ReviewTaskDialog } from "@/components/dashboard/ReviewTaskDialog";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
@@ -46,6 +46,7 @@ export default function ProjectLeadDashboard() {
   const assignedProjects = projects.filter((p) => p.status === "assigned");
   const inProgressProjects = projects.filter((p) => p.status === "in_progress");
   const pendingApprovalProjects = projects.filter((p) => p.status === "pending_approval");
+  const needRevisionProjects = projects.filter((p) => p.status === "need_revision");
   const completeProjects = projects.filter((p) => p.status === "complete");
   const getStatusWeight = (status: string) => {
     switch (status) {
@@ -91,6 +92,7 @@ export default function ProjectLeadDashboard() {
     { key: "assigned", label: "Assigned", count: assignedProjects.length },
     { key: "in_progress", label: "In Progress", count: inProgressProjects.length },
     { key: "pending_approval", label: "Pending Approval", count: pendingApprovalProjects.length },
+    { key: "need_revision", label: "Need Revision", count: needRevisionProjects.length },
     { key: "complete", label: "Completed", count: completeProjects.length },
   ];
 
@@ -99,6 +101,7 @@ export default function ProjectLeadDashboard() {
       case "assigned": return assignedProjects;
       case "in_progress": return inProgressProjects;
       case "pending_approval": return pendingApprovalProjects;
+      case "need_revision": return needRevisionProjects;
       case "complete": return completeProjects;
       default: return projects;
     }
@@ -153,17 +156,15 @@ export default function ProjectLeadDashboard() {
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} />
       </div>
 
-      {/* Project Status Tracker */}
-      <ProjectStatusTracker projects={projects} />
-
       {/* Project Status Tabs - grid card style */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {tabs.map((tab) => {
           const colorMap: Record<string, string> = {
             all: "bg-primary",
             assigned: "bg-amber-500",
             in_progress: "bg-blue-500",
             pending_approval: "bg-orange-500",
+            need_revision: "bg-purple-500",
             complete: "bg-emerald-500",
           };
           return (
