@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FileText, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight, UsersRound } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Menu, X, Briefcase, LogOut, Megaphone, FileText, Building2, ChevronDown, ChevronRight, UserPlus, Settings, ArrowLeftRight, UsersRound, Eye } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
