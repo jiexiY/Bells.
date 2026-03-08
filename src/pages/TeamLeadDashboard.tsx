@@ -117,22 +117,35 @@ export default function TeamLeadDashboard() {
       />
 
       {/* Project Status Tabs */}
-      <div className="flex items-center gap-1 border-b border-border mb-6 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              "px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap",
-              activeTab === tab.key ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {tab.label} ({tab.count})
-            {activeTab === tab.key && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-            )}
-          </button>
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        {tabs.map((tab) => {
+          const colorMap: Record<string, string> = {
+            all: "bg-primary",
+            assigned: "bg-amber-500",
+            in_progress: "bg-blue-500",
+            pending_approval: "bg-orange-500",
+            need_revision: "bg-purple-500",
+            complete: "bg-emerald-500",
+          };
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                "flex items-center gap-2 p-2 rounded-lg transition-colors border",
+                activeTab === tab.key
+                  ? "bg-muted border-primary/40 shadow-sm"
+                  : "bg-muted/50 border-border hover:bg-muted/80"
+              )}
+            >
+              <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", colorMap[tab.key] || "bg-primary")} />
+              <div className="min-w-0 text-left">
+                <p className="text-xs text-muted-foreground truncate">{tab.label}</p>
+                <p className="text-sm font-semibold text-foreground">{tab.count}</p>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Project Cards with task progress */}
