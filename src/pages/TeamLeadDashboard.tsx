@@ -34,6 +34,7 @@ export default function TeamLeadDashboard() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [reviewTask, setReviewTask] = useState<TaskRow | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const departmentProjects = projects;
   const departmentTasks = tasks.filter((t) => departmentProjects.some((p) => p.id === t.project_id));
