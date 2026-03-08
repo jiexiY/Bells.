@@ -23,6 +23,7 @@ export default function CompanyPortal() {
   const { data: memberships = [] } = useCompanyMemberships();
   const unreadCounts = useUnreadCountByCompany();
   const createCompany = useCreateCompany();
+  const deleteCompany = useDeleteCompany();
   const { data: pendingInvites = [] } = useMyInvitations();
   const respondInvite = useRespondInvitation();
   const { setActiveCompanyId } = useCompany();
