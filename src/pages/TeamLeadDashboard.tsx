@@ -292,24 +292,36 @@ export default function TeamLeadDashboard() {
               <h3 className="font-semibold text-foreground mb-3">
                 {selectedDate?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
               </h3>
-              {departmentProjects.filter(p => {
-                const due = new Date(p.due_date);
-                return selectedDate && due.toDateString() === selectedDate.toDateString();
-              }).length > 0 ? (
-                <div className="space-y-2">
-                  {departmentProjects.filter(p => {
-                    const due = new Date(p.due_date);
-                    return selectedDate && due.toDateString() === selectedDate.toDateString();
-                  }).map(p => (
-                    <div key={p.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                      <span className="text-sm font-medium">{p.name}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm">No events on this date</p>
-              )}
+              {(() => {
+                const dueDateProjects = departmentProjects.filter(p => {
+                  const due = new Date(p.due_date);
+                  return selectedDate && due.toDateString() === selectedDate.toDateString();
+                });
+                const dueDateTasks = tasks.filter(t => {
+                  const due = new Date(t.due_date);
+                  return selectedDate && due.toDateString() === selectedDate.toDateString();
+                });
+                return dueDateProjects.length > 0 || dueDateTasks.length > 0 ? (
+                  <div className="space-y-2">
+                    {dueDateProjects.map(p => (
+                      <div key={p.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="text-sm font-medium">{p.name}</span>
+                        <span className="text-xs text-muted-foreground ml-auto">Project</span>
+                      </div>
+                    ))}
+                    {dueDateTasks.map(t => (
+                      <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <div className="w-2 h-2 rounded-full bg-accent" />
+                        <span className="text-sm font-medium">{t.title}</span>
+                        <span className="text-xs text-muted-foreground ml-auto">Task</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">No events on this date</p>
+                );
+              })()}
             </div>
           </div>
         </CardContent>
