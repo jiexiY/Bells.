@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Plus, FolderPlus, UserPlus, ChevronDown, ChevronRight, ListTodo, X } from "lucide-react";
+import { Plus, FolderPlus, UserPlus, ChevronDown, ChevronRight, ListTodo, X, CalendarDays, User, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,7 @@ export function CreateProjectSection({
   });
 
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<typeof tasks[0] | null>(null);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskProjectId, setTaskProjectId] = useState("");
   const [taskForm, setTaskForm] = useState({
@@ -255,9 +256,13 @@ export function CreateProjectSection({
                         <ScrollArea className="max-h-[280px]">
                           <div className="space-y-1.5">
                             {projectTasks.map((task) => (
-                              <div
+                              <button
                                 key={task.id}
-                                className="flex items-center gap-3 text-xs p-2.5 rounded-md bg-card border border-border/50 hover:border-border transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedTask(task);
+                                }}
+                                className="w-full flex items-center gap-3 text-xs p-2.5 rounded-md bg-card border border-border/50 hover:border-primary/40 hover:bg-muted/50 transition-colors cursor-pointer text-left"
                               >
                                 <div className="flex-1 min-w-0">
                                   <span className={cn(
@@ -272,7 +277,8 @@ export function CreateProjectSection({
                                 </div>
                                 <span className="ml-auto shrink-0 flex items-center gap-1.5">
                                   <StatusBadge status={task.status as TaskStatus} type="task" />
-                                  <button
+                                  <span
+                                    role="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setDeleteTaskId(task.id);
@@ -281,9 +287,9 @@ export function CreateProjectSection({
                                     title="Delete task"
                                   >
                                     <X className="w-3.5 h-3.5 text-destructive" />
-                                  </button>
+                                  </span>
                                 </span>
-                              </div>
+                              </button>
                             ))}
                           </div>
                         </ScrollArea>
@@ -352,6 +358,59 @@ export function CreateProjectSection({
             <Button onClick={handleAssignTask} disabled={!taskForm.title || !taskForm.dueDate || createTask.isPending}>
               {createTask.isPending ? "Assigning..." : "Assign Task"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Task Detail Dialog */}
+      <Dialog open={!!selectedTask} onOpenChange={(open) => { if (!open) setSelectedTask(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              {selectedTask?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedTask && (
+            <div className="space-y-4 py-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                <StatusBadge status={selectedTask.status as TaskStatus} type="task" />
+              </div>
+              {selectedTask.description && (
+                <div className="space-y-1">
+                  <span className="text-sm font-medium text-foreground">Description</span>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedTask.description}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarDays className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">Due Date</p>
+                    <p className="font-medium text-foreground">{new Date(selectedTask.due_date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                {selectedTask.assignee_name && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground text-xs">Assigned To</p>
+                      <p className="font-medium text-foreground">{selectedTask.assignee_name}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <CalendarDays className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <p className="text-muted-foreground text-xs">Created</p>
+                  <p className="font-medium text-foreground">{new Date(selectedTask.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedTask(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
