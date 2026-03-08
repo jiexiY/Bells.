@@ -275,8 +275,23 @@ export function CreateProjectSection({
                                     <span className="text-[10px] text-muted-foreground">{task.assignee_name}</span>
                                   )}
                                 </div>
-                                <span className="ml-auto shrink-0">
+                                <span className="ml-auto shrink-0 flex items-center gap-1.5">
                                   <StatusBadge status={task.status as TaskStatus} type="task" />
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (confirm("Delete this task?")) {
+                                        deleteTask.mutate(task.id, {
+                                          onSuccess: () => toast.success("Task deleted"),
+                                          onError: (err) => toast.error(err.message),
+                                        });
+                                      }
+                                    }}
+                                    className="p-0.5 rounded hover:bg-destructive/10 transition-colors"
+                                    title="Delete task"
+                                  >
+                                    <X className="w-3.5 h-3.5 text-destructive" />
+                                  </button>
                                 </span>
                               </div>
                             ))}
