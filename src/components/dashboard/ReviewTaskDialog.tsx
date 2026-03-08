@@ -22,8 +22,10 @@ interface ReviewTaskDialogProps {
 export function ReviewTaskDialog({ open, onOpenChange, task }: ReviewTaskDialogProps) {
   const { data: submissions = [], isLoading } = useTaskSubmissions(task.id);
   const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
   const [feedback, setFeedback] = useState("");
   const [action, setAction] = useState<"approve" | "reject" | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const latestSubmission = submissions[0];
 
