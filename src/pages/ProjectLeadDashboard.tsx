@@ -101,6 +101,7 @@ export default function ProjectLeadDashboard() {
       case "assigned": return assignedProjects;
       case "in_progress": return inProgressProjects;
       case "pending_approval": return pendingApprovalProjects;
+      case "need_revision": return needRevisionProjects;
       case "complete": return completeProjects;
       default: return projects;
     }
