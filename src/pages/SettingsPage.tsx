@@ -96,6 +96,7 @@ export default function SettingsPage() {
   const { data: companies = [] } = useCompanies();
   const { data: memberships = [] } = useCompanyMemberships();
   const createCompany = useCreateCompany();
+  const sendInvitation = useSendInvitation();
 
   const [activeTab, setActiveTab] = useState("profile");
   const [saving, setSaving] = useState(false);
