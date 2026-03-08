@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCompanies, useCompanyMemberships, useCreateCompany } from "@/hooks/useCompanies";
+import { useCompanies, useCompanyMemberships, useCreateCompany, useDeleteCompany } from "@/hooks/useCompanies";
 import { useUnreadCountByCompany } from "@/hooks/useNotifications";
 import { useMyInvitations, useRespondInvitation } from "@/hooks/useInvitations";
 import { useAuth } from "@/contexts/AuthContext";
