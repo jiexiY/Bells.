@@ -29,6 +29,7 @@ export function CreateProjectSection({
   const { user, profileName } = useAuth();
   const createProject = useCreateProject();
   const createTask = useCreateTask();
+  const deleteTask = useDeleteTask();
   const { data: projects = [] } = useProjects();
   const { data: tasks = [] } = useTasks();
   const { data: members = [] } = useMembers();
