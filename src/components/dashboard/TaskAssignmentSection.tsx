@@ -57,7 +57,7 @@ export function TaskAssignmentSection({
 
   // Show standalone tasks: all for project leads, or only user's own
   const recentTasks = allTasks
-    .filter((t) => !t.project_id && (showAllTasks || t.assigned_by === user?.id || t.assigned_to === user?.id))
+    .filter((t) => showAllTasks || t.assigned_by === user?.id || t.assigned_to === user?.id)
     ;
 
   // Two-step flow: create unassigned task first, then assign
