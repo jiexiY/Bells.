@@ -42,6 +42,7 @@ export function TaskAssignmentSection({
 }: TaskAssignmentSectionProps) {
   const { user } = useAuth();
   const createTask = useCreateTask();
+  const deleteTask = useDeleteTask();
   const { data: allTasks = [] } = useTasks();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState({
