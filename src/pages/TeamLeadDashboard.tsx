@@ -80,6 +80,9 @@ export default function TeamLeadDashboard() {
 
   return (
     <DashboardLayout title="Team Lead Dashboard" subtitle={`${(dept || "").charAt(0).toUpperCase() + (dept || "").slice(1)} Department`}>
+      {/* Project Status Tracker */}
+      <ProjectStatusTracker projects={departmentProjects} />
+
       {/* Search bar */}
       <div className="mb-6">
         <div className="relative w-full max-w-sm">
@@ -92,9 +95,6 @@ export default function TeamLeadDashboard() {
           />
         </div>
       </div>
-
-      {/* Project Status Tracker */}
-      <ProjectStatusTracker projects={departmentProjects} />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
