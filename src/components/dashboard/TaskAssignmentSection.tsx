@@ -41,6 +41,7 @@ export function TaskAssignmentSection({
   title = "Assign Individual Task",
   description = "Create and assign individual tasks to team members",
   onTaskClick,
+  showAllTasks = false,
 }: TaskAssignmentSectionProps) {
   const { user } = useAuth();
   const createTask = useCreateTask();
