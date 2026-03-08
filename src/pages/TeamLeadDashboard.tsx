@@ -13,7 +13,7 @@ import type { TaskRow } from "@/hooks/useTasks";
 import { useMembers } from "@/hooks/useMembers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
-import { FolderCheck, Clock, CheckCircle2, Users, Search, CalendarDays } from "lucide-react";
+import { FolderCheck, Clock, CheckCircle2, Users, Search, CalendarDays, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
