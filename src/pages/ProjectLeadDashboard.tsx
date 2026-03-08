@@ -244,45 +244,27 @@ export default function ProjectLeadDashboard() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-6">
-            {(() => {
-              // Collect all deadline dates
-              const deadlineDates = useMemo(() => {
-                const dates = new Set<string>();
-                projects.forEach(p => {
-                  if (p.due_date) dates.add(new Date(p.due_date).toDateString());
-                });
-                tasks.forEach(t => {
-                  if (t.due_date) dates.add(new Date(t.due_date).toDateString());
-                });
-                return dates;
-              }, [projects, tasks]);
-
-              const deadlineModifier = (date: Date) => deadlineDates.has(date.toDateString());
-
-              return (
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  className="rounded-lg border border-border"
-                  modifiers={{ hasDeadline: deadlineModifier }}
-                  modifiersClassNames={{ hasDeadline: "relative" }}
-                  components={{
-                    DayContent: ({ date, ...props }) => {
-                      const hasEvent = deadlineDates.has(date.toDateString());
-                      return (
-                        <div className="relative flex flex-col items-center">
-                          {hasEvent && (
-                            <div className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-primary" />
-                          )}
-                          <span className="mt-0.5">{date.getDate()}</span>
-                        </div>
-                      );
-                    },
-                  }}
-                />
-              );
-            })()}
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-lg border border-border"
+              modifiers={{ hasDeadline: (date: Date) => deadlineDates.has(date.toDateString()) }}
+              modifiersClassNames={{ hasDeadline: "relative" }}
+              components={{
+                DayContent: ({ date }) => {
+                  const hasEvent = deadlineDates.has(date.toDateString());
+                  return (
+                    <div className="relative flex flex-col items-center">
+                      {hasEvent && (
+                        <div className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-primary" />
+                      )}
+                      <span className="mt-0.5">{date.getDate()}</span>
+                    </div>
+                  );
+                },
+              }}
+            />
             <div className="flex-1">
               <h3 className="font-semibold text-foreground mb-3">
                 {selectedDate?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
