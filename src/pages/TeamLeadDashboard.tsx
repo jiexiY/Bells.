@@ -161,40 +161,77 @@ export default function TeamLeadDashboard() {
         })}
       </div>
 
-      {/* Project Cards with task progress */}
+      {/* Cards for projects and tasks */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-        {filteredList.map((p) => {
-          const projectTasks = departmentTasks.filter(t => t.project_id === p.id);
-          const completedTasks = projectTasks.filter(t => t.status === "completed" || t.status === "approved");
-          const taskProgress = projectTasks.length ? Math.round((completedTasks.length / projectTasks.length) * 100) : 0;
-          return (
-            <Card key={p.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-5 space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-semibold text-foreground truncate text-base">{p.name}</h3>
-                  <StatusBadge status={p.status as any} type="project" />
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">{p.description}</p>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1.5">
-                    <span className="text-muted-foreground font-medium">Project Progress</span>
-                    <span className="font-semibold text-foreground">{p.progress}%</span>
+        {filteredItems.map((item) => {
+          if (item.type === "project") {
+            const p = item.data;
+            const projectTasks = departmentTasks.filter(t => t.project_id === p.id);
+            const completedTasks = projectTasks.filter(t => t.status === "completed" || t.status === "approved");
+            const taskProgress = projectTasks.length ? Math.round((completedTasks.length / projectTasks.length) * 100) : 0;
+            return (
+              <Card key={`project-${p.id}`} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-semibold text-foreground truncate text-base">{p.name}</h3>
+                    <StatusBadge status={p.status as any} type="project" />
                   </div>
-                  <ProgressBar value={p.progress} showLabel={false} size="sm" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1.5">
-                    <span className="text-muted-foreground font-medium">Tasks ({completedTasks.length}/{projectTasks.length})</span>
-                    <span className="font-semibold text-foreground">{taskProgress}%</span>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{p.description}</p>
+                  <div>
+                    <div className="flex items-center justify-between text-sm mb-1.5">
+                      <span className="text-muted-foreground font-medium">Project Progress</span>
+                      <span className="font-semibold text-foreground">{p.progress}%</span>
+                    </div>
+                    <ProgressBar value={p.progress} showLabel={false} size="sm" />
                   </div>
-                  <ProgressBar value={taskProgress} showLabel={false} size="sm" />
-                </div>
-              </CardContent>
-            </Card>
-          );
+                  <div>
+                    <div className="flex items-center justify-between text-sm mb-1.5">
+                      <span className="text-muted-foreground font-medium">Tasks ({completedTasks.length}/{projectTasks.length})</span>
+                      <span className="font-semibold text-foreground">{taskProgress}%</span>
+                    </div>
+                    <ProgressBar value={taskProgress} showLabel={false} size="sm" />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          } else {
+            const t = item.data;
+            const project = departmentProjects.find(p => p.id === t.project_id);
+            return (
+              <Card key={`task-${t.id}`} className="hover:shadow-md transition-shadow border-l-4 border-l-accent">
+                <CardContent className="p-5 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <h3 className="font-semibold text-foreground truncate text-base">{t.title}</h3>
+                    </div>
+                    <StatusBadge status={t.status as any} type="task" />
+                  </div>
+                  {project && (
+                    <p className="text-xs text-muted-foreground">
+                      Project: <span className="font-medium text-foreground">{project.name}</span>
+                    </p>
+                  )}
+                  <p className="text-sm text-muted-foreground line-clamp-2">{t.description}</p>
+                  {t.assignee_name && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{t.assignee_name}</span>
+                    </div>
+                  )}
+                  {t.due_date && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      <span>{new Date(t.due_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          }
         })}
-        {filteredList.length === 0 && (
-          <p className="text-muted-foreground col-span-full text-center py-12">No projects found</p>
+        {filteredItems.length === 0 && (
+          <p className="text-muted-foreground col-span-full text-center py-12">No items found</p>
         )}
       </div>
 
