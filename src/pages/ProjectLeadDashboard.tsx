@@ -152,7 +152,6 @@ export default function ProjectLeadDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <StatsCard title="Total Projects" value={projects.length} icon={FolderCheck} description={`${assignedProjects.length} assigned`} />
         <StatsCard title="Completed" value={completeProjects.length} icon={CheckCircle2} description={`${completionRate}% completion rate`} />
-        <StatsCard title="In Progress" value={inProgressProjects.length} icon={Clock} />
         <StatsCard title="Avg. Progress" value={`${avgProgress}%`} icon={BarChart3} />
       </div>
 
