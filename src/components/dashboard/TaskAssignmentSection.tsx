@@ -46,6 +46,7 @@ export function TaskAssignmentSection({
   const deleteTask = useDeleteTask();
   const { data: allTasks = [] } = useTasks();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
