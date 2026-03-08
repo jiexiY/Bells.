@@ -39,6 +39,7 @@ import {
   Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCompany } from "@/contexts/CompanyContext";
 
 const sidebarItems = [
   { id: "profile", label: "Profile", icon: User },
@@ -95,6 +96,7 @@ export default function SettingsPage() {
   const { data: companies = [] } = useCompanies();
   const { data: memberships = [] } = useCompanyMemberships();
   const createCompany = useCreateCompany();
+  const { activeCompanyId } = useCompany();
   const [sendingInvite, setSendingInvite] = useState(false);
 
   const [activeTab, setActiveTab] = useState("profile");
@@ -736,7 +738,14 @@ export default function SettingsPage() {
                           <Building2 className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{company?.name || "Unknown"}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-foreground">{company?.name || "Unknown"}</p>
+                            {activeCompanyId === m.company_id && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none">
+                                Current
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground capitalize">{m.role.replace("_", " ")}{m.department ? ` · ${m.department}` : ""}</p>
                         </div>
                       </div>
