@@ -23,7 +23,6 @@ export default function ProjectLeadDashboard() {
   const { data: tasks = [] } = useTasks();
   const updateProject = useUpdateProject();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [codeCopied, setCodeCopied] = useState(false);
   const [reviewTask, setReviewTask] = useState<TaskRow | null>(null);
