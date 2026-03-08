@@ -226,6 +226,74 @@ export default function SettingsPage() {
     }
   };
 
+  const loadWorkspaceMembers = async (companyId: string) => {
+    // Get all memberships for this company
+    const { data: allMemberships } = await supabase
+      .from("company_memberships")
+      .select("user_id, role")
+      .eq("company_id", companyId)
+      .eq("is_active", true);
+    
+    if (!allMemberships) return;
+    
+    // Get profiles for these users
+    const userIds = allMemberships.map(m => m.user_id);
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, name, email")
+      .in("user_id", userIds);
+    
+    const members = allMemberships
+      .filter(m => m.user_id !== user?.id) // Exclude current user
+      .map(m => {
+        const profile = profiles?.find(p => p.user_id === m.user_id);
+        return {
+          user_id: m.user_id,
+          name: profile?.name || "Unknown",
+          email: profile?.email || "",
+          role: m.role,
+        };
+      });
+    
+    setWorkspaceMembers(members);
+  };
+
+  const handleTransferRole = async () => {
+    if (!transferringWsId || !transferTargetUserId) return;
+    setTransferring(true);
+    const { error } = await supabase.rpc("transfer_role_to_member", {
+      _company_id: transferringWsId,
+      _target_user_id: transferTargetUserId,
+    });
+    setTransferring(false);
+    if (error) {
+      toast({ title: "Error", description: error.message || "Failed to transfer role.", variant: "destructive" });
+    } else {
+      toast({ title: "Role transferred", description: "Your role has been transferred successfully." });
+      setTransferDialogOpen(false);
+      setTransferringWsId(null);
+      setTransferTargetUserId("");
+      window.location.reload();
+    }
+  };
+
+  const handleLeaveWorkspace = async () => {
+    if (!leavingWsId) return;
+    setLeaving(true);
+    const { error } = await supabase.rpc("leave_workspace", {
+      _company_id: leavingWsId,
+    });
+    setLeaving(false);
+    if (error) {
+      toast({ title: "Error", description: error.message || "Failed to leave workspace.", variant: "destructive" });
+    } else {
+      toast({ title: "Left workspace", description: "You have left the workspace." });
+      setLeaveDialogOpen(false);
+      setLeavingWsId(null);
+      window.location.reload();
+    }
+  };
+
   const nameParts = profile.name.split(" ");
   const firstName = nameParts[0] || "";
   const lastName = nameParts.slice(1).join(" ") || "";
