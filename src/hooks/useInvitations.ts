@@ -75,11 +75,13 @@ export function useSendInvitation() {
       department?: "tech" | "marketing" | "research";
       inviterName?: string;
     }) => {
+      const normalizedEmail = email.trim().toLowerCase();
+
       const { data, error } = await supabase
         .from("invitations")
         .insert({
           company_id: activeCompanyId!,
-          email,
+          email: normalizedEmail,
           role,
           department: department || null,
           invited_by: user!.id,
@@ -102,7 +104,7 @@ export function useSendInvitation() {
       // Send invite email (fire-and-forget, don't block on failure)
       try {
         await supabase.functions.invoke("send-invite-email", {
-          body: { email, companyName, inviterName, role },
+          body: { email: normalizedEmail, companyName, inviterName, role },
         });
       } catch (emailErr) {
         console.error("Failed to send invite email:", emailErr);
