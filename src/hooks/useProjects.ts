@@ -57,11 +57,15 @@ export function useCreateProject() {
 
 export function useUpdateProject() {
   const qc = useQueryClient();
+  const { activeCompanyId } = useCompany();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ProjectRow> & { id: string }) => {
       const { error } = await supabase.from("projects").update(updates as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["projects"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["projects", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    },
   });
 }
