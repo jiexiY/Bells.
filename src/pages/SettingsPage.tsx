@@ -289,10 +289,33 @@ export default function SettingsPage() {
     } else {
       toast({ title: "Role transferred", description: "Your role has been transferred successfully." });
       setTransferDialogOpen(false);
+      setPostTransferWsId(transferringWsId);
       setTransferringWsId(null);
       setTransferTargetUserId("");
-      window.location.reload();
+      setPostTransferDialogOpen(true);
     }
+  };
+
+  const handlePostTransferChoice = async () => {
+    if (!postTransferWsId || !postTransferChoice) return;
+    setProcessingChoice(true);
+    
+    if (postTransferChoice === "leave") {
+      const { error } = await supabase.rpc("leave_workspace", {
+        _company_id: postTransferWsId,
+      });
+      if (error) {
+        toast({ title: "Error", description: error.message || "Failed to leave workspace.", variant: "destructive" });
+      } else {
+        toast({ title: "Left workspace", description: "You have left the workspace." });
+      }
+    }
+    
+    setProcessingChoice(false);
+    setPostTransferDialogOpen(false);
+    setPostTransferWsId(null);
+    setPostTransferChoice(null);
+    window.location.reload();
   };
 
   const handleLeaveWorkspace = async () => {
