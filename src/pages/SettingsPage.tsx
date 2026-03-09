@@ -126,6 +126,12 @@ export default function SettingsPage() {
   const [transferring, setTransferring] = useState(false);
   const [workspaceMembers, setWorkspaceMembers] = useState<Array<{ user_id: string; name: string; email: string; role: string }>>([]);
   
+  // Post-transfer choice dialog
+  const [postTransferDialogOpen, setPostTransferDialogOpen] = useState(false);
+  const [postTransferWsId, setPostTransferWsId] = useState<string | null>(null);
+  const [postTransferChoice, setPostTransferChoice] = useState<"stay" | "leave" | null>(null);
+  const [processingChoice, setProcessingChoice] = useState(false);
+  
   // Leave Workspace
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [leavingWsId, setLeavingWsId] = useState<string | null>(null);
