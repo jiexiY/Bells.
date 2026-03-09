@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCompany } from "@/contexts/CompanyContext";
 
 export interface MemberRow {
   user_id: string;
@@ -10,35 +11,49 @@ export interface MemberRow {
 }
 
 export function useMembers(department?: string) {
+  const { activeCompanyId } = useCompany();
+  
   return useQuery({
-    queryKey: ["members", department],
+    queryKey: ["members", activeCompanyId, department],
     queryFn: async () => {
-      // Join profiles with user_roles
-      const { data: roles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user_id, role, department");
-      if (rolesError) throw rolesError;
+      if (!activeCompanyId) return [];
 
+      // Get active company members
+      const { data: memberships, error: membershipsError } = await supabase
+        .from("company_memberships")
+        .select("user_id, role, department")
+        .eq("company_id", activeCompanyId)
+        .eq("is_active", true);
+
+      if (membershipsError) throw membershipsError;
+
+      if (!memberships.length) return [];
+
+      // Get profiles for these users
+      const userIds = memberships.map(m => m.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("user_id, name, email");
+        .select("user_id, name, email")
+        .in("user_id", userIds);
+
       if (profilesError) throw profilesError;
 
-      const members: MemberRow[] = roles.map((r) => {
-        const profile = profiles.find((p) => p.user_id === r.user_id);
+      const memberRows: MemberRow[] = memberships.map((m) => {
+        const profile = profiles?.find(p => p.user_id === m.user_id);
         return {
-          user_id: r.user_id,
+          user_id: m.user_id,
           name: profile?.name || "",
           email: profile?.email || "",
-          department: r.department as MemberRow["department"],
-          role: r.role as MemberRow["role"],
+          department: m.department as MemberRow["department"],
+          role: m.role as MemberRow["role"],
         };
       });
 
       if (department) {
-        return members.filter((m) => m.role === "member" && m.department === department);
+        return memberRows.filter((m) => m.role === "member" && m.department === department);
       }
-      return members;
+      return memberRows;
     },
+    enabled: !!activeCompanyId,
   });
 }
