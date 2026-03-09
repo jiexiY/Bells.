@@ -46,7 +46,10 @@ export function useCreateTask() {
       const { error } = await supabase.from("tasks").insert({ ...task, company_id: activeCompanyId } as any);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["tasks"] }); // Also invalidate general tasks queries
+    },
   });
 }
 
