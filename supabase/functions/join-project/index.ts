@@ -67,14 +67,22 @@ Deno.serve(async (req) => {
     // Check if already a member
     const { data: existing } = await adminClient
       .from("company_memberships")
-      .select("id")
+      .select("id, role, department")
       .eq("company_id", company.id)
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (existing) {
-      return new Response(JSON.stringify({ error: "Already a member of this organization", company_name: company.name }), {
-        status: 409,
+      // User is already a member - return success with current membership info
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Already a member of this organization",
+          company_name: company.name, 
+          company_id: company.id,
+          role: existing.role 
+        }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
