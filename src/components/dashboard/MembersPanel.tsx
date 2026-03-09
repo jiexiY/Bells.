@@ -266,6 +266,12 @@ export function MembersPanel() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <RoleTransferDialog 
+        open={roleTransferOpen} 
+        onOpenChange={setRoleTransferOpen}
+        members={members}
+      />
     </>
   );
 }
