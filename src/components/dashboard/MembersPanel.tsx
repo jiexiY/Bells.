@@ -45,6 +45,8 @@ export function MembersPanel() {
     type: "remove" | "add";
     member: MemberInfo;
   } | null>(null);
+  
+  const [roleTransferOpen, setRoleTransferOpen] = useState(false);
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["company-members", activeCompanyId],
