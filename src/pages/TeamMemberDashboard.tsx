@@ -164,14 +164,10 @@ export default function TeamMemberDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
         <Card className="bg-muted/50 border-border">
           <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" />Incomplete</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-bold text-foreground">{incompleteTasks.length}</p></CardContent>
-        </Card>
-        <Card className="bg-muted/50 border-border">
-          <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />In Progress</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold text-foreground">{inProgressTasks.length}</p></CardContent>
         </Card>
         <Card className="bg-muted/50 border-border">
           <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5" />Revision</CardTitle></CardHeader>
