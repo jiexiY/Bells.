@@ -1042,6 +1042,38 @@ export default function SettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Post-Transfer Choice Dialog */}
+      <Dialog open={postTransferDialogOpen} onOpenChange={setPostTransferDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>What would you like to do next?</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Your role has been successfully transferred. You can either stay as a team member or leave the organization.
+            </p>
+            <RadioGroup value={postTransferChoice || ""} onValueChange={(value) => setPostTransferChoice(value as "stay" | "leave")}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="stay" id="stay" />
+                <Label htmlFor="stay" className="font-normal">Stay as a team member</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="leave" id="leave" />
+                <Label htmlFor="leave" className="font-normal">Leave the organization</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <DialogFooter>
+            <Button 
+              onClick={handlePostTransferChoice} 
+              disabled={processingChoice || !postTransferChoice}
+            >
+              {processingChoice ? "Processing..." : "Continue"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
