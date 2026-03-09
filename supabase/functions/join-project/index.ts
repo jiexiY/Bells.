@@ -67,24 +67,60 @@ Deno.serve(async (req) => {
     // Check if already a member
     const { data: existing } = await adminClient
       .from("company_memberships")
-      .select("id, role, department")
+      .select("id, role, department, is_active")
       .eq("company_id", company.id)
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (existing) {
-      // User is already a member - return success with current membership info
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Already a member of this organization",
-          company_name: company.name, 
-          company_id: company.id,
-          role: existing.role 
-        }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (existing.is_active) {
+        // User is already an active member - return success
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: "Already a member of this organization",
+            company_name: company.name, 
+            company_id: company.id,
+            role: existing.role 
+          }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else {
+        // Reactivate existing inactive membership
+        const { error: reactivateError } = await adminClient
+          .from("company_memberships")
+          .update({ 
+            is_active: true, 
+            role: selectedRole, 
+            department: selectedDepartment 
+          })
+          .eq("id", existing.id);
+
+        if (reactivateError) {
+          return new Response(JSON.stringify({ error: "Failed to reactivate membership" }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Also update user_roles
+        await adminClient
+          .from("user_roles")
+          .upsert({ user_id: user.id, role: selectedRole, department: selectedDepartment }, { onConflict: "user_id" });
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: "Reactivated membership",
+            company_name: company.name, 
+            company_id: company.id,
+            role: selectedRole 
+          }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Add user as member with chosen role and department
