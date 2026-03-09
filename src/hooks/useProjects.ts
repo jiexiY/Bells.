@@ -48,7 +48,10 @@ export function useCreateProject() {
       if (error) throw error;
       return data as ProjectRow;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["projects"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["projects", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    },
   });
 }
 
