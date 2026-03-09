@@ -46,28 +46,39 @@ export function useCreateTask() {
       const { error } = await supabase.from("tasks").insert({ ...task, company_id: activeCompanyId } as any);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["tasks"] }); // Also invalidate general tasks queries
+    },
   });
 }
 
 export function useUpdateTask() {
   const qc = useQueryClient();
+  const { activeCompanyId } = useCompany();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<TaskRow> & { id: string }) => {
       const { error } = await supabase.from("tasks").update(updates as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
   });
 }
 
 export function useDeleteTask() {
   const qc = useQueryClient();
+  const { activeCompanyId } = useCompany();
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("tasks").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
   });
 }
