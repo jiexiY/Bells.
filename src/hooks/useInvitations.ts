@@ -51,7 +51,7 @@ export function useMyInvitations() {
       const { data, error } = await supabase
         .from("invitations")
         .select("*")
-        .eq("email", profile.email)
+        .ilike("email", profile.email.trim())
         .eq("status", "pending");
       if (error) throw error;
       return data as InvitationRow[];
