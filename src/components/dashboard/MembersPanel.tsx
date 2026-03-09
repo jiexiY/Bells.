@@ -7,7 +7,7 @@ import { useRemoveMember, useAddMember } from "@/hooks/useManageMembers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { UserMinus, UserPlus } from "lucide-react";
+import { UserMinus, UserPlus, Settings, ArrowRightLeft } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -19,6 +19,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { RoleTransferDialog } from "./RoleTransferDialog";
 
 interface MemberInfo {
   user_id: string;
