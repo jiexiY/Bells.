@@ -18,30 +18,36 @@ export function useMembers(department?: string) {
     queryFn: async () => {
       if (!activeCompanyId) return [];
 
-      // Get active company members with their roles and profile info
-      const { data: members, error } = await supabase
+      // Get active company members
+      const { data: memberships, error: membershipsError } = await supabase
         .from("company_memberships")
-        .select(`
-          user_id,
-          role,
-          department,
-          profiles!inner (
-            name,
-            email
-          )
-        `)
+        .select("user_id, role, department")
         .eq("company_id", activeCompanyId)
         .eq("is_active", true);
 
-      if (error) throw error;
+      if (membershipsError) throw membershipsError;
 
-      const memberRows: MemberRow[] = members.map((m) => ({
-        user_id: m.user_id,
-        name: m.profiles?.name || "",
-        email: m.profiles?.email || "",
-        department: m.department as MemberRow["department"],
-        role: m.role as MemberRow["role"],
-      }));
+      if (!memberships.length) return [];
+
+      // Get profiles for these users
+      const userIds = memberships.map(m => m.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, name, email")
+        .in("user_id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      const memberRows: MemberRow[] = memberships.map((m) => {
+        const profile = profiles?.find(p => p.user_id === m.user_id);
+        return {
+          user_id: m.user_id,
+          name: profile?.name || "",
+          email: profile?.email || "",
+          department: m.department as MemberRow["department"],
+          role: m.role as MemberRow["role"],
+        };
+      });
 
       if (department) {
         return memberRows.filter((m) => m.role === "member" && m.department === department);
