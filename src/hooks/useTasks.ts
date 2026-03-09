@@ -55,12 +55,16 @@ export function useCreateTask() {
 
 export function useUpdateTask() {
   const qc = useQueryClient();
+  const { activeCompanyId } = useCompany();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<TaskRow> & { id: string }) => {
       const { error } = await supabase.from("tasks").update(updates as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
   });
 }
 
