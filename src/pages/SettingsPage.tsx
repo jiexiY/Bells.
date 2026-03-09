@@ -126,6 +126,12 @@ export default function SettingsPage() {
   const [transferring, setTransferring] = useState(false);
   const [workspaceMembers, setWorkspaceMembers] = useState<Array<{ user_id: string; name: string; email: string; role: string }>>([]);
   
+  // Post-transfer choice dialog
+  const [postTransferDialogOpen, setPostTransferDialogOpen] = useState(false);
+  const [postTransferWsId, setPostTransferWsId] = useState<string | null>(null);
+  const [postTransferChoice, setPostTransferChoice] = useState<"stay" | "leave" | null>(null);
+  const [processingChoice, setProcessingChoice] = useState(false);
+  
   // Leave Workspace
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [leavingWsId, setLeavingWsId] = useState<string | null>(null);
@@ -283,10 +289,33 @@ export default function SettingsPage() {
     } else {
       toast({ title: "Role transferred", description: "Your role has been transferred successfully." });
       setTransferDialogOpen(false);
+      setPostTransferWsId(transferringWsId);
       setTransferringWsId(null);
       setTransferTargetUserId("");
-      window.location.reload();
+      setPostTransferDialogOpen(true);
     }
+  };
+
+  const handlePostTransferChoice = async () => {
+    if (!postTransferWsId || !postTransferChoice) return;
+    setProcessingChoice(true);
+    
+    if (postTransferChoice === "leave") {
+      const { error } = await supabase.rpc("leave_workspace", {
+        _company_id: postTransferWsId,
+      });
+      if (error) {
+        toast({ title: "Error", description: error.message || "Failed to leave workspace.", variant: "destructive" });
+      } else {
+        toast({ title: "Left workspace", description: "You have left the workspace." });
+      }
+    }
+    
+    setProcessingChoice(false);
+    setPostTransferDialogOpen(false);
+    setPostTransferWsId(null);
+    setPostTransferChoice(null);
+    window.location.reload();
   };
 
   const handleLeaveWorkspace = async () => {
@@ -1009,6 +1038,38 @@ export default function SettingsPage() {
               }}
             >
               {sendingInvite ? "Sending..." : "Send invite"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Post-Transfer Choice Dialog */}
+      <Dialog open={postTransferDialogOpen} onOpenChange={setPostTransferDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>What would you like to do next?</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Your role has been successfully transferred. You can either stay as a team member or leave the organization.
+            </p>
+            <RadioGroup value={postTransferChoice || ""} onValueChange={(value) => setPostTransferChoice(value as "stay" | "leave")}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="stay" id="stay" />
+                <Label htmlFor="stay" className="font-normal">Stay as a team member</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="leave" id="leave" />
+                <Label htmlFor="leave" className="font-normal">Leave the organization</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <DialogFooter>
+            <Button 
+              onClick={handlePostTransferChoice} 
+              disabled={processingChoice || !postTransferChoice}
+            >
+              {processingChoice ? "Processing..." : "Continue"}
             </Button>
           </DialogFooter>
         </DialogContent>
