@@ -7,7 +7,7 @@ import { useRemoveMember, useAddMember } from "@/hooks/useManageMembers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { UserMinus, UserPlus } from "lucide-react";
+import { UserMinus, UserPlus, Settings, ArrowRightLeft } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -19,6 +19,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { RoleTransferDialog } from "./RoleTransferDialog";
 
 interface MemberInfo {
   user_id: string;
@@ -38,6 +45,8 @@ export function MembersPanel() {
     type: "remove" | "add";
     member: MemberInfo;
   } | null>(null);
+  
+  const [roleTransferOpen, setRoleTransferOpen] = useState(false);
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["company-members", activeCompanyId],
@@ -186,7 +195,27 @@ export function MembersPanel() {
         </Button>
       )}
 
-      {m.is_active && !canRemove(m) && (
+      {m.is_active && !canRemove(m) && m.user_id === user?.id && (myRole === "project_lead" || myRole === "team_lead") && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setRoleTransferOpen(true)}>
+              <ArrowRightLeft className="h-4 w-4 mr-2" />
+              Manage Role
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
+      {m.is_active && !canRemove(m) && m.user_id !== user?.id && (
         <span
           className={cn(
             "text-[10px] font-medium shrink-0",
@@ -237,6 +266,12 @@ export function MembersPanel() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <RoleTransferDialog 
+        open={roleTransferOpen} 
+        onOpenChange={setRoleTransferOpen}
+        members={members}
+      />
     </>
   );
 }
