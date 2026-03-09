@@ -195,7 +195,27 @@ export function MembersPanel() {
         </Button>
       )}
 
-      {m.is_active && !canRemove(m) && (
+      {m.is_active && !canRemove(m) && m.user_id === user?.id && (myRole === "project_lead" || myRole === "team_lead") && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setRoleTransferOpen(true)}>
+              <ArrowRightLeft className="h-4 w-4 mr-2" />
+              Manage Role
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
+      {m.is_active && !canRemove(m) && m.user_id !== user?.id && (
         <span
           className={cn(
             "text-[10px] font-medium shrink-0",
