@@ -256,6 +256,7 @@ export default function SettingsPage() {
     
     const members = allMemberships
       .filter(m => m.user_id !== user?.id) // Exclude current user
+      .filter(m => m.role === "member" || m.role === "team_lead") // Include team members and team leads as transfer options
       .map(m => {
         const profile = profiles?.find(p => p.user_id === m.user_id);
         return {
