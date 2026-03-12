@@ -57,10 +57,16 @@ export default function CompanyPortal() {
         setInviteCode("");
         setJoinRole("member");
         setJoinDepartment("");
-        // Set the active company and navigate to dashboard
+        // Set the active company and navigate to role-specific dashboard
         if (data.company_id) {
           setActiveCompanyId(data.company_id);
-          navigate("/");
+          const role = data.role || joinRole;
+          const roleRouteMap: Record<string, string> = {
+            project_lead: "/project-lead",
+            team_lead: "/team-lead",
+            member: "/member",
+          };
+          navigate(roleRouteMap[role] || "/");
         } else {
           window.location.reload();
         }
