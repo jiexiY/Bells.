@@ -225,11 +225,20 @@ export default function TeamLeadDashboard() {
               );
             } else {
               const t = item.data;
+              const isOwnTask = t.assigned_to === user?.id;
+              const canSubmit = isOwnTask && ["in_progress", "need_revision", "incomplete"].includes(t.status);
               return (
                 <Card
                   key={`task-${t.id}`}
                   className="hover:shadow-md transition-shadow border-l-4 border-l-accent cursor-pointer"
-                  onClick={() => setReviewTask(t)}
+                  onClick={() => {
+                    if (isOwnTask) {
+                      // Own tasks: open submit dialog if submittable, otherwise just view
+                      if (canSubmit) setSubmitDialogTask(t);
+                    } else {
+                      setReviewTask(t);
+                    }
+                  }}
                 >
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-center justify-between gap-2">
@@ -243,7 +252,7 @@ export default function TeamLeadDashboard() {
                     {t.assignee_name && (
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Users className="w-3.5 h-3.5" />
-                        <span>{t.assignee_name}</span>
+                        <span>{t.assignee_name}{isOwnTask ? " (You)" : ""}</span>
                       </div>
                     )}
                     {t.due_date && (
@@ -251,6 +260,13 @@ export default function TeamLeadDashboard() {
                         <CalendarDays className="w-3.5 h-3.5" />
                         <span>{new Date(t.due_date).toLocaleDateString()}</span>
                       </div>
+                    )}
+                    {canSubmit && (
+                      <Button size="sm" variant="outline" className="mt-1 gap-1.5"
+                        onClick={(e) => { e.stopPropagation(); setSubmitDialogTask(t); }}>
+                        <ArrowUpCircle className="w-3.5 h-3.5" />
+                        Submit for Approval
+                      </Button>
                     )}
                   </CardContent>
                 </Card>
