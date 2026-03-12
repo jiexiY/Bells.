@@ -36,6 +36,7 @@ export default function TeamLeadDashboard() {
   const [showCards, setShowCards] = useState(true); // cards visible by default for "all"
   const [searchQuery, setSearchQuery] = useState("");
   const [reviewTask, setReviewTask] = useState<TaskRow | null>(null);
+  const [submitDialogTask, setSubmitDialogTask] = useState<TaskRow | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const departmentProjects = projects;
