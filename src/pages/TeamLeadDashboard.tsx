@@ -7,13 +7,14 @@ import { TaskAssignmentSection } from "@/components/dashboard/TaskAssignmentSect
 import { CreateProjectSection } from "@/components/dashboard/CreateProjectSection";
 import { ProjectStatusTracker } from "@/components/dashboard/ProjectStatusTracker";
 import { ReviewTaskDialog } from "@/components/dashboard/ReviewTaskDialog";
+import { SubmitForApprovalDialog } from "@/components/dashboard/SubmitForApprovalDialog";
 import { useProjects, useUpdateProject } from "@/hooks/useProjects";
 import { useTasks, useUpdateTask } from "@/hooks/useTasks";
 import type { TaskRow } from "@/hooks/useTasks";
 import { useMembers } from "@/hooks/useMembers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
-import { FolderCheck, Clock, CheckCircle2, Users, Search, CalendarDays, BarChart3 } from "lucide-react";
+import { FolderCheck, Clock, CheckCircle2, Users, Search, CalendarDays, BarChart3, ArrowUpCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
