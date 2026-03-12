@@ -346,12 +346,22 @@ export default function TeamLeadDashboard() {
         </CardContent>
       </Card>
 
-       {/* Review Dialog */}
+       {/* Review Dialog (for tasks assigned to others) */}
        {reviewTask && (
          <ReviewTaskDialog
            open={!!reviewTask}
            onOpenChange={(open) => { if (!open) setReviewTask(null); }}
            task={reviewTask}
+         />
+       )}
+
+       {/* Submit Dialog (for own tasks) */}
+       {submitDialogTask && (
+         <SubmitForApprovalDialog
+           open={!!submitDialogTask}
+           onOpenChange={(open) => { if (!open) setSubmitDialogTask(null); }}
+           taskId={submitDialogTask.id}
+           taskTitle={submitDialogTask.title}
          />
        )}
      </DashboardLayout>
